@@ -124,3 +124,51 @@ class Purchasing(models.Model):
     def __str__(self):
         # String representation showing supplier and date
         return f"Purchase {self.id_purchases} – {self.supplier or 'Unknown'} ({self.purchase_date or 'Unknown'})"
+
+class Servicing(models.Model):
+    # Primary key, auto increment for each service record
+    id_servicing = models.AutoField(primary_key=True)
+
+    # Foreign key linking to Inventory (table 1)
+    inventory_item = models.ForeignKey(
+        Inventory,
+        on_delete=models.CASCADE,
+        related_name="servicings"
+    )
+
+    # Service date (user input, cannot be empty)
+    service_date = models.DateField()
+
+    # Supplier name (max 24 chars, required)
+    supplier = models.CharField(
+        max_length=24,
+        verbose_name='Dodavatel',
+        help_text='Dodavatel servisu, povinné'
+    )
+
+    # Price with currency (max 12 chars, required)
+    price = models.CharField(
+        max_length=12,
+        verbose_name='Cena',
+        help_text='Cena servisu, povinné'
+    )
+
+    # Invoice number (max 12 chars, can include non-numeric chars, optional)
+    invoice = models.CharField(
+        max_length=12,
+        blank=True,
+        verbose_name='Faktura',
+        help_text='Číslo faktury, může být prázdné'
+    )
+
+    # Notes (max 24 chars, optional)
+    notes = models.CharField(
+        max_length=24,
+        blank=True,
+        verbose_name='Poznámka',
+        help_text='Volitelná poznámka k servisu'
+    )
+
+    def __str__(self):
+        # String representation showing supplier, date, and invoice
+        return f"Servicing {self.id_servicing} – {self.supplier} ({self.service_date})"
