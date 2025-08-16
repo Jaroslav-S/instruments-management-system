@@ -196,7 +196,7 @@ class Rentals(models.Model):
 
     # Logical value – rented yes/no
     is_rented = models.BooleanField(
-        default=True,
+        default=False,
         verbose_name='Zapůjčeno',
         help_text='Zda je položka aktuálně zapůjčena'
     )
