@@ -94,3 +94,33 @@ class Inventory(models.Model):
     def __str__(self):
         # This defines how the object is displayed in Django admin
         return f"{self.item} ({self.inv_num})"
+
+class Purchasing(models.Model):
+    # Primary key, auto increment for each purchase record
+    id_purchases = models.AutoField(primary_key=True)
+
+    # Foreign key linking to Inventory (table 1)
+    inventory_item = models.ForeignKey(
+        Inventory,
+        on_delete=models.CASCADE,
+        related_name="purchases"
+    )
+
+    # Purchase date (user input, can be empty = unknown)
+    purchase_date = models.DateField(blank=True, null=True)  # DateField can stay with null=True
+
+    # Supplier name (max 14 chars, user input, can be empty = unknown)
+    supplier = models.CharField(max_length=14, blank=True)
+
+    # Price with currency (max 12 chars, user input, can be empty = unknown)
+    price = models.CharField(max_length=12, blank=True)
+
+    # Invoice number (max 12 chars, can include non-numeric chars, user input, can be empty = unknown)
+    invoice = models.CharField(max_length=12, blank=True)
+
+    # Notes (max 24 chars, optional, can be empty)
+    notes = models.CharField(max_length=24, blank=True)
+
+    def __str__(self):
+        # String representation showing supplier and date
+        return f"Purchase {self.id_purchases} – {self.supplier or 'Unknown'} ({self.purchase_date or 'Unknown'})"
