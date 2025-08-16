@@ -172,3 +172,44 @@ class Servicing(models.Model):
     def __str__(self):
         # String representation showing supplier, date, and invoice
         return f"Servicing {self.id_servicing} – {self.supplier} ({self.service_date})"
+
+class Rentals(models.Model):
+    # Primary key, auto increment for each rental record
+    id_rentals = models.AutoField(primary_key=True)
+
+    # Foreign key linking to Inventory (table 1)
+    inventory_item = models.ForeignKey(
+        Inventory,
+        on_delete=models.CASCADE,
+        related_name="rentals"
+    )
+
+    # Rental date (user input, cannot be empty)
+    rental_date = models.DateField()
+
+    # Renter name (max 24 chars, required)
+    renter_name = models.CharField(
+        max_length=24,
+        verbose_name='Jméno',
+        help_text='Jméno osoby, povinné'
+    )
+
+    # Logical value – rented yes/no
+    is_rented = models.BooleanField(
+        default=True,
+        verbose_name='Zapůjčeno',
+        help_text='Zda je položka aktuálně zapůjčena'
+    )
+
+    # Notes (max 24 chars, optional)
+    notes = models.CharField(
+        max_length=24,
+        blank=True,
+        verbose_name='Poznámka',
+        help_text='Volitelná poznámka'
+    )
+
+    def __str__(self):
+        # String representation showing renter name and date
+        status = 'Yes' if self.is_rented else 'No'
+        return f"Rental {self.id_rentals} – {self.renter_name} ({self.rental_date}) – Rented: {status}"
