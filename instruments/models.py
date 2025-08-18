@@ -213,3 +213,37 @@ class Rentals(models.Model):
         # String representation showing renter name and date
         status = 'Yes' if self.is_rented else 'No'
         return f"Rental {self.id_rentals} – {self.renter_name} ({self.rental_date}) – Rented: {status}"
+
+# Disposals model
+class Disposals(models.Model):
+    # ForeignKey to Inventory
+    inventory = models.ForeignKey(
+        Inventory,
+        on_delete=models.CASCADE,
+        related_name='disposals',
+        verbose_name='Inventář'
+    )
+
+    # Unique ID for each disposal
+    id_disposal = models.AutoField(
+        primary_key=True,
+        verbose_name='ID vyřazení'
+    )
+
+    # Disposal date
+    date = models.DateField(
+        verbose_name='Datum vyřazení',
+        help_text='Datum vyřazení položky z inventáře'
+    )
+
+    # Optional note
+    note = models.CharField(
+        max_length=24,
+        blank=True,
+        null=True,
+        verbose_name='Poznámka',
+        help_text='Poznámka k vyřazení (max. 24 znaků)'
+    )
+
+    def __str__(self):
+        return f"Disposal {self.id_disposal} for {self.inventory.item}"
