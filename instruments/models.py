@@ -1,99 +1,144 @@
 from django.db import models
+from django.core.exceptions import ValidationError
 
 class Inventory(models.Model):
-    # Primary key, auto-incremented
-    # Django automatically creates an "id" field as the primary key
-
-    inv_num = models.CharField(
-        max_length=10,
-        blank=True,
-        verbose_name='Inventární číslo',  # shown to user
-        help_text='Inventární číslo, může být prázdné'
-    )
-
-    group_choices = [
+    # -----------------------------
+    # Main group of instruments
+    # -----------------------------
+    GROUP_CHOICES = [
+        ('smyčce', 'Smyčce'),
         ('dřeva', 'Dřeva'),
         ('žestě', 'Žestě'),
-        ('smyčce', 'Smyčce'),
         ('bicí', 'Bicí'),
-        ('klávesy', 'Klávesy'),
+        ('harfy', 'Harfy'),
+        ('klavíry', 'Klavíry'),
         ('elektronika', 'Elektronika'),
-        ('ostatní', 'Ostatní'),
     ]
-    group = models.CharField(
-        max_length=10,
-        choices=group_choices,
-        verbose_name='Skupina',
-        help_text='Vyberte skupinu nástroje, nesmí být prázdné'
-    )
 
-    subgroup_choices = [
-        # Woodwinds
-        ('flétny', 'Flétny'),
-        ('hoboje', 'Hoboje'),
-        ('klarinety', 'Klarinety'),
-        ('fagoty', 'Fagoty'),
-        ('jiné', 'Jiné'),
-        # Brass
-        ('lesní rohy', 'Lesní rohy'),
-        ('trumpety', 'Trumpety'),
-        ('trombony', 'Trombony'),
-        ('tuby', 'Tuby'),
+    # -----------------------------
+    # Subgroup (depends on group)
+    # -----------------------------
+    SUBGROUP_CHOICES = [
         # Strings
         ('housle', 'Housle'),
         ('violy', 'Violy'),
         ('violoncella', 'Violoncella'),
         ('kontrabasy', 'Kontrabasy'),
+        ('smyčce ostatní', 'Ostatní (smyčce)'),
+
+        # Woodwinds
+        ('flétny', 'Flétny'),
+        ('hoboje', 'Hoboje'),
+        ('klarinety', 'Klarinety'),
+        ('fagoty', 'Fagoty'),
+        ('dřeva ostatní', 'Ostatní (dřeva)'),
+
+        # Brass
+        ('lesní rohy', 'Lesní rohy'),
+        ('trumpety', 'Trumpety'),
+        ('trombony', 'Trombony'),
+        ('tuby', 'Tuby'),
+        ('žestě ostatní', 'Ostatní (žestě)'),
+
         # Percussion
         ('bicí', 'Bicí'),
-        # Keyboards
-        ('klávesy', 'Klávesy'),
+        ('bicí ostatní', 'Ostatní (bicí)'),
+
+        # Harps
+        ('harfy', 'Harfy'),
+        ('harfy ostatní', 'Ostatní (harfy)'),
+
+        # Pianos
+        ('klavíry', 'Klavíry'),
+        ('klavíry ostatní', 'Ostatní (klavíry)'),
+
         # Electronics
-        ('elektronika', 'Elektronika'),
-        ('other', 'Jiné'),
+        ('klávesy', 'Klávesy'),
+        ('elektronika ostatní', 'Ostatní (elektronika)'),
     ]
-    subgroup = models.CharField(
-        max_length=14,
-        choices=subgroup_choices,
-        verbose_name='Podskupina',
-        help_text='Vyberte podskupinu podle skupiny, nesmí být prázdné'
+
+    # -----------------------------
+    # Sub-subgroup
+    # -----------------------------
+    SUBSUBGROUP_CHOICES = [
+        ('smyčec', 'Smyčec'),                # only valid for group = smyčce
+        ('nástroj', 'Nástroj'),              # valid for all groups
+        ('příslušenství', 'Příslušenství'),  # valid for all groups
+        ('obal', 'Obal'),                    # valid for all groups
+    ]
+
+    # -----------------------------
+    # Fields
+    # -----------------------------
+    group = models.CharField(
+        max_length=32,
+        choices=GROUP_CHOICES,
+        verbose_name='Skupina',
+        help_text='Hlavní skupina nástrojů (např. smyčce, dřeva, žestě...)'
     )
 
-    subsubgroup_choices = [
-        ('nastroj', 'Nástroj'),
-        ('prislusenstvi', 'Příslušenství'),
-        ('obal', 'Obal'),
-        ('smycec', 'Smyčec'),
-    ]
+    subgroup = models.CharField(
+        max_length=32,
+        choices=SUBGROUP_CHOICES,
+        verbose_name='Podskupina',
+        help_text='Podskupina nástrojů podle zvolené skupiny'
+    )
+
     subsubgroup = models.CharField(
-        max_length=14,
-        choices=subsubgroup_choices,
-        verbose_name='Pod-podskupina',
-        help_text='Vyberte typ položky, nesmí být prázdné'
+        max_length=32,
+        choices=SUBSUBGROUP_CHOICES,
+        blank=True,
+        null=True,
+        verbose_name='Dílčí podskupina',
+        help_text='Dílčí podskupina (např. smyčec – pouze pro smyčce; nástroj/příslušenství/obal – pro všechny skupiny)'
     )
 
     item = models.CharField(
-        max_length=24,
+        max_length=64,
         verbose_name='Položka',
-        help_text='Název konkrétní věci, povinné'
+        help_text='Název položky'
     )
 
     description = models.CharField(
-        max_length=24,
+        max_length=128,
+        blank=True,
+        null=True,
         verbose_name='Popis',
-        help_text='Popis konkrétní věci, povinné'
+        help_text='Detailní popis položky'
     )
 
-    serial = models.CharField(
-        max_length=12,
+    serial_number = models.CharField(
+        max_length=64,
         blank=True,
+        null=True,
         verbose_name='Sériové číslo',
-        help_text='Sériové nebo výrobní číslo, může být prázdné'
+        help_text='Sériové číslo nástroje nebo příslušenství'
     )
+
+    # -----------------------------
+    # Validation
+    # -----------------------------
+    def clean(self):
+        # Validate subgroup vs group
+        valid_subgroups = {
+            'smyčce': ['housle', 'violy', 'violoncella', 'kontrabasy', 'smyčce ostatní'],
+            'dřeva': ['flétny', 'hoboje', 'klarinety', 'fagoty', 'dřeva ostatní'],
+            'žestě': ['lesní rohy', 'trumpety', 'trombony', 'tuby', 'žestě ostatní'],
+            'bicí': ['bicí', 'bicí ostatní'],
+            'harfy': ['harfy', 'harfy ostatní'],
+            'klavíry': ['klavíry', 'klavíry ostatní'],
+            'elektronika': ['klávesy', 'elektronika ostatní'],
+        }
+
+        if self.subgroup not in valid_subgroups.get(self.group, []):
+            raise ValidationError({'subgroup': f"Podskupina '{self.subgroup}' není platná pro skupinu '{self.group}'."})
+
+        # Validate subsubgroup vs group
+        if self.subsubgroup == 'smyčec' and self.group != 'smyčce':
+            raise ValidationError({'subsubgroup': "Volba 'smyčec' je povolena pouze pro skupinu 'smyčce'."})
 
     def __str__(self):
-        # This defines how the object is displayed in Django admin
-        return f"{self.item} ({self.inv_num})"
+        return f"{self.group} – {self.subgroup} – {self.item}"
 
 class Purchasing(models.Model):
     # Primary key, auto increment for each purchase record
