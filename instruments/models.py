@@ -155,17 +155,23 @@ class Inventory(models.Model):
             raise ValidationError({'subsubgroup': "Volba 'smyčec' je povolena pouze pro skupinu 'smyčce'."})
 
     def __str__(self):
-        return f"{self.inv_num} – {self.group} – {self.subgroup} – {self.item} – {self.description}"
+        inv = self.inv_num or "Unknown"
+        serial = f" [{self.serial_number}]" if self.serial_number else ""
+        return f"{inv} – {self.item}{serial} ({self.group} / {self.subgroup})"
 
 class Purchases(models.Model):
+
+    # Primary key for Purchases
     id_purchases = models.AutoField(primary_key=True)
 
+    # Foreign key to link Purchases to Inventory
     inventory_item = models.ForeignKey(
         'Inventory',
         on_delete=models.CASCADE,
         related_name="purchases"
     )
 
+    # purchase date, user input, can be empty when unknown
     purchase_date = models.DateField(
         null=True,
         blank=True,
@@ -173,6 +179,7 @@ class Purchases(models.Model):
         help_text='Datum nákupu podle faktury, pokud je neznámé, nech prázdné'
     )
 
+    # supplier name, user input, can be empty when unknown
     supplier = models.CharField(
         max_length=14,
         blank=True,
@@ -180,6 +187,7 @@ class Purchases(models.Model):
         help_text='Dodavatel podle faktury, pokud je neznámý, nech prázdné'
     )
 
+    # price, user input, can be empty when unknown
     price = models.CharField(
         max_length=12,
         blank=True,
@@ -187,6 +195,7 @@ class Purchases(models.Model):
         help_text='Cena podle faktury, pokud je neznámá, nech prázdné'
     )
 
+    # invoice number, user input, can be empty when unknown
     invoice = models.CharField(
         max_length=12,
         blank=True,
@@ -194,6 +203,7 @@ class Purchases(models.Model):
         help_text='Číslo faktury, pokud je neznámé, nech prázdné'
     )
 
+    # space for user note, optional user input
     notes = models.CharField(
         max_length=24,
         blank=True,
@@ -204,7 +214,7 @@ class Purchases(models.Model):
     def clean(self):
         errors = {}
 
-        # kontrola délky polí, i když Django už to omezuje max_length
+        # fields length validation
         if self.supplier and len(self.supplier) > 14:
             errors['supplier'] = "Dodavatel může mít maximálně 14 znaků."
         if self.price and len(self.price) > 12:
