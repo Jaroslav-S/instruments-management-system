@@ -157,34 +157,67 @@ class Inventory(models.Model):
     def __str__(self):
         return f"{self.inv_num} – {self.group} – {self.subgroup} – {self.item} – {self.description}"
 
-class Purchasing(models.Model):
-    # Primary key, auto increment for each purchase record
+class Purchases(models.Model):
     id_purchases = models.AutoField(primary_key=True)
 
-    # Foreign key linking to Inventory (table 1)
     inventory_item = models.ForeignKey(
-        Inventory,
+        'Inventory',
         on_delete=models.CASCADE,
         related_name="purchases"
     )
 
-    # Purchase date (user input, can be empty = unknown)
-    purchase_date = models.DateField(blank=True, null=True)  # DateField can stay with null=True
+    purchase_date = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name='Datum nákupu',
+        help_text='Datum nákupu podle faktury, pokud je neznámé, nech prázdné'
+    )
 
-    # Supplier name (max 14 chars, user input, can be empty = unknown)
-    supplier = models.CharField(max_length=14, blank=True)
+    supplier = models.CharField(
+        max_length=14,
+        blank=True,
+        verbose_name='Dodavatel',
+        help_text='Dodavatel podle faktury, pokud je neznámý, nech prázdné'
+    )
 
-    # Price with currency (max 12 chars, user input, can be empty = unknown)
-    price = models.CharField(max_length=12, blank=True)
+    price = models.CharField(
+        max_length=12,
+        blank=True,
+        verbose_name='Cena',
+        help_text='Cena podle faktury, pokud je neznámá, nech prázdné'
+    )
 
-    # Invoice number (max 12 chars, can include non-numeric chars, user input, can be empty = unknown)
-    invoice = models.CharField(max_length=12, blank=True)
+    invoice = models.CharField(
+        max_length=12,
+        blank=True,
+        verbose_name='Číslo faktury',
+        help_text='Číslo faktury, pokud je neznámé, nech prázdné'
+    )
 
-    # Notes (max 24 chars, optional, can be empty)
-    notes = models.CharField(max_length=24, blank=True)
+    notes = models.CharField(
+        max_length=24,
+        blank=True,
+        verbose_name='Poznámka',
+        help_text='Prostor pro poznámku, maximálně 24 znaků'
+    )
+
+    def clean(self):
+        errors = {}
+
+        # kontrola délky polí, i když Django už to omezuje max_length
+        if self.supplier and len(self.supplier) > 14:
+            errors['supplier'] = "Dodavatel může mít maximálně 14 znaků."
+        if self.price and len(self.price) > 12:
+            errors['price'] = "Cena může mít maximálně 12 znaků."
+        if self.invoice and len(self.invoice) > 12:
+            errors['invoice'] = "Číslo faktury může mít maximálně 12 znaků."
+        if self.notes and len(self.notes) > 24:
+            errors['notes'] = "Poznámka může mít maximálně 24 znaků."
+
+        if errors:
+            raise ValidationError(errors)
 
     def __str__(self):
-        # String representation showing supplier and date
         return f"Purchase {self.id_purchases} – {self.supplier or 'Unknown'} ({self.purchase_date or 'Unknown'})"
 
 class Servicing(models.Model):
