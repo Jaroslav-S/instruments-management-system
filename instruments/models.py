@@ -187,12 +187,22 @@ class Purchases(models.Model):
         help_text='Dodavatel podle faktury, pokud je neznámý, nech prázdné'
     )
 
-    # price, user input, can be empty when unknown
-    price = models.CharField(
-        max_length=12,
+    # price - amount, user input, can be empty when unknown
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
         blank=True,
         verbose_name='Cena',
-        help_text='Cena podle faktury, pokud je neznámá, nech prázdné'
+        help_text='Částka podle faktury, pokud je neznámá, nech prázdné'
+    )
+
+    # price - currency, user input, can be empty when unknown
+    currency = models.CharField(
+        max_length=3,
+        blank=True,
+        verbose_name='Měna',
+        help_text='Měna podle faktury, pokud je neznámá, nech prázdné'
     )
 
     # invoice number, user input, can be empty when unknown
@@ -214,13 +224,23 @@ class Purchases(models.Model):
     def clean(self):
         errors = {}
 
-        # fields length validation
+        # Supplier length validation
         if self.supplier and len(self.supplier) > 14:
             errors['supplier'] = "Dodavatel může mít maximálně 14 znaků."
-        if self.price and len(self.price) > 12:
-            errors['price'] = "Cena může mít maximálně 12 znaků."
+
+        # Amount validation
+        if self.amount is not None and self.amount < 0:
+            errors['amount'] = "Částka nemůže být záporná."
+
+        # Currency length validation
+        if self.currency and len(self.currency) > 3:
+            errors['currency'] = "Měna může mít maximálně 3 znaky."
+
+        # Invoice length validation
         if self.invoice and len(self.invoice) > 12:
             errors['invoice'] = "Číslo faktury může mít maximálně 12 znaků."
+
+        # Notes length validation
         if self.notes and len(self.notes) > 24:
             errors['notes'] = "Poznámka může mít maximálně 24 znaků."
 
@@ -232,9 +252,9 @@ class Purchases(models.Model):
         date = self.purchase_date or "Unknown"
         item = self.inventory_item.item if self.inventory_item else "Unknown item"
         inv_num = self.inventory_item.inv_num or "Unknown" if self.inventory_item else ""
-        price = self.price or "Unknown"
-        invoice = self.invoice or "Unknown"
-        return f"Purchase {self.id_purchases} – {supplier} ({date}) – {item} [{inv_num}] – {price} – Invoice: {invoice}"
+        amount = f"{self.amount:.2f}" if self.amount is not None else "Unknown"
+        currency = self.currency or "Unknown"
+        return f"Purchase {self.id_purchases} – {supplier} ({date}) – {item} [{inv_num}] – {amount} {currency} – Invoice: {self.invoice or 'Unknown'}"
 
 class Servicing(models.Model):
     # Primary key, auto increment for each service record
