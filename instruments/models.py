@@ -328,45 +328,63 @@ class Servicing(models.Model):
             raise ValidationError(errors)
 
 class Rentals(models.Model):
-    # Primary key, auto increment for each rental record
+    # --- Primary Key ---
     id_rentals = models.AutoField(primary_key=True)
 
-    # Foreign key linking to Inventory (table 1)
+    # --- Foreign Keys ---
     inventory_item = models.ForeignKey(
         Inventory,
         on_delete=models.CASCADE,
         related_name="rentals"
     )
 
-    # Rental date (user input, cannot be empty)
-    rental_date = models.DateField()
+    # --- Data fields ---
+    RENTAL_TYPE_CHOICES = [
+        ('loan', 'Zápůjčka'),
+        ('return', 'Vrácení'),
+    ]
 
-    # Renter name (max 24 chars, required)
+    action_date = models.DateField(
+        verbose_name='Datum akce',
+        help_text='Datum zápůjčky nebo vrácení'
+    )
+
+    rental_type = models.CharField(
+        max_length=6,
+        choices=RENTAL_TYPE_CHOICES,
+        verbose_name='Typ akce',
+        help_text='Zda jde o zápůjčku nebo vrácení'
+    )
+
     renter_name = models.CharField(
         max_length=24,
-        verbose_name='Jméno',
-        help_text='Jméno osoby, povinné'
+        verbose_name='Jméno půjčitele',
+        help_text='Osoba nebo organizace, které bylo půjčeno / od které vráceno'
     )
 
-    # Logical value – rented yes/no
-    is_rented = models.BooleanField(
-        default=False,
-        verbose_name='Zapůjčeno',
-        help_text='Zda je položka aktuálně zapůjčena'
-    )
-
-    # Notes (max 24 chars, optional)
     notes = models.CharField(
         max_length=24,
         blank=True,
         verbose_name='Poznámka',
-        help_text='Volitelná poznámka'
+        help_text='Volitelná poznámka k akci'
     )
 
+    # --- Methods ---
     def __str__(self):
-        # String representation showing renter name and date
-        status = 'Yes' if self.is_rented else 'No'
-        return f"Rental {self.id_rentals} – {self.renter_name} ({self.rental_date}) – Rented: {status}"
+        action = 'Zapůjčeno' if self.rental_type == 'loan' else 'Vráceno'
+        return f"Rental {self.id_rentals} – {self.renter_name} ({self.action_date}) – {action}"
+
+    # --- Validations ---
+    def clean(self):
+        errors = {}
+        if self.renter_name and len(self.renter_name) > 24:
+            errors['renter_name'] = "Jméno může mít maximálně 24 znaků."
+        if self.notes and len(self.notes) > 24:
+            errors['notes'] = "Poznámka může mít maximálně 24 znaků."
+        if self.rental_type not in dict(self.RENTAL_TYPE_CHOICES):
+            errors['rental_type'] = "Neplatný typ akce."
+        if errors:
+            raise ValidationError(errors)
 
 # Disposals model
 class Disposals(models.Model):
