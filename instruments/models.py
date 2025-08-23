@@ -256,11 +256,12 @@ class Purchases(models.Model):
         currency = self.currency or "Unknown"
         return f"Purchase {self.id_purchases} – {supplier} ({date}) – {item} [{inv_num}] – {amount} {currency} – Invoice: {self.invoice or 'Unknown'}"
 
+
 class Servicing(models.Model):
     # Primary key, auto increment for each service record
     id_servicing = models.AutoField(primary_key=True)
 
-    # Foreign key linking to Inventory (table 1)
+    # Foreign key linking to Inventory
     inventory_item = models.ForeignKey(
         Inventory,
         on_delete=models.CASCADE,
@@ -268,7 +269,10 @@ class Servicing(models.Model):
     )
 
     # Service date (user input, cannot be empty)
-    service_date = models.DateField()
+    service_date = models.DateField(
+        verbose_name='Datum',
+        help_text='Datum servisu, povinné'
+    )
 
     # Supplier name (max 24 chars, required)
     supplier = models.CharField(
@@ -277,14 +281,25 @@ class Servicing(models.Model):
         help_text='Dodavatel servisu, povinné'
     )
 
-    # Price with currency (max 12 chars, required)
-    price = models.CharField(
-        max_length=12,
+    # Price - amount
+    amount = models.DecimalField(
+        max_digits=12,
+        decimal_places=2,
+        null=True,
+        blank=True,
         verbose_name='Cena',
-        help_text='Cena servisu, povinné'
+        help_text='Částka podle faktury, pokud je neznámá, nech prázdné'
     )
 
-    # Invoice number (max 12 chars, can include non-numeric chars, optional)
+    # Price - currency
+    currency = models.CharField(
+        max_length=3,
+        blank=True,
+        verbose_name='Měna',
+        help_text='Měna podle faktury, pokud je neznámá, nech prázdné'
+    )
+
+    # Invoice number (optional)
     invoice = models.CharField(
         max_length=12,
         blank=True,
@@ -292,7 +307,7 @@ class Servicing(models.Model):
         help_text='Číslo faktury, může být prázdné'
     )
 
-    # Notes (max 24 chars, optional)
+    # Notes (optional)
     notes = models.CharField(
         max_length=24,
         blank=True,
@@ -300,9 +315,43 @@ class Servicing(models.Model):
         help_text='Volitelná poznámka k servisu'
     )
 
+    # -----------------------------
+    # Validation
+    # -----------------------------
+    def clean(self):
+        errors = {}
+
+        # Supplier length validation
+        if self.supplier and len(self.supplier) > 24:
+            errors['supplier'] = "Dodavatel může mít maximálně 24 znaků."
+
+        # Amount validation
+        if self.amount is not None and self.amount < 0:
+            errors['amount'] = "Částka nemůže být záporná."
+
+        # Currency length validation
+        if self.currency and len(self.currency) > 3:
+            errors['currency'] = "Měna může mít maximálně 3 znaky."
+
+        # Invoice length validation
+        if self.invoice and len(self.invoice) > 12:
+            errors['invoice'] = "Číslo faktury může mít maximálně 12 znaků."
+
+        # Notes length validation
+        if self.notes and len(self.notes) > 24:
+            errors['notes'] = "Poznámka může mít maximálně 24 znaků."
+
+        if errors:
+            raise ValidationError(errors)
+
+    # -----------------------------
+    # String representation
+    # -----------------------------
     def __str__(self):
-        # String representation showing supplier, date, and invoice
-        return f"Servicing {self.id_servicing} – {self.supplier} ({self.service_date})"
+        amount_str = f"{self.amount:.2f}" if self.amount is not None else "Unknown"
+        currency_str = self.currency or "Unknown"
+        invoice_str = self.invoice or "Unknown"
+        return f"Servicing {self.id_servicing} – {self.supplier} ({self.service_date}) – {amount_str} {currency_str} – Invoice: {invoice_str}"
 
 class Rentals(models.Model):
     # Primary key, auto increment for each rental record
