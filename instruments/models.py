@@ -70,11 +70,22 @@ class Inventory(models.Model):
     # -----------------------------
     # Fields
     # -----------------------------
-    inv_num = models.AutoField(
-        primary_key=True,
-        verbose_name='Inventární číslo'
+
+    # primary key
+    id = models.AutoField(
+        primary_key=True
     )
 
+    # internal inventory number text field, can be empty (not null)
+    inv_num = models.CharField(
+        max_length=10,
+        blank=True,
+        null=True,
+        verbose_name='inventární číslo',
+        help_text='filharmonické inventární číslo, pokud existuje'
+    )
+
+    # 1st category selection, user has to choose predefined category of instrument, cannot be empty (not null)
     group = models.CharField(
         max_length=10,
         choices=GROUP_CHOICES,
@@ -82,6 +93,7 @@ class Inventory(models.Model):
         help_text='Hlavní skupina nástrojů (např. smyčce, dřeva, žestě...)'
     )
 
+    # 2nd subcategory, user has to choose predefined subcategory of instrument, cannot be empty (not null)
     subgroup = models.CharField(
         max_length=20,
         choices=SUBGROUP_CHOICES,
@@ -89,6 +101,7 @@ class Inventory(models.Model):
         help_text='Podskupina nástrojů podle zvolené skupiny'
     )
 
+    # 3rd subsubcategory, user has to choose predefined subsubcategory, cannot be empty (not null)
     subsubgroup = models.CharField(
         max_length=13,
         choices=SUBSUBGROUP_CHOICES,
@@ -96,18 +109,21 @@ class Inventory(models.Model):
         help_text='Dílčí podskupina (např. smyčec – pouze pro smyčce; nástroj/příslušenství/obal – pro všechny skupiny)'
     )
 
+    # item description, not null
     item = models.CharField(
         max_length=24,
         verbose_name='Nástroj',
         help_text='Co je to za nástroj?'
     )
 
+    # item detail, not null
     description = models.CharField(
-        max_length=24,   # ✅ podle zadání max. 24 znaků
+        max_length=24,
         verbose_name='Výrobce, název, typ',
         help_text='Výrobce, název, typ'
     )
 
+    # item serial or production number, can be null
     serial_number = models.CharField(
         max_length=12,
         blank=True,
