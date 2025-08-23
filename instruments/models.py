@@ -70,45 +70,46 @@ class Inventory(models.Model):
     # -----------------------------
     # Fields
     # -----------------------------
+    inv_num = models.AutoField(
+        primary_key=True,
+        verbose_name='Inventární číslo'
+    )
+
     group = models.CharField(
-        max_length=32,
+        max_length=10,
         choices=GROUP_CHOICES,
         verbose_name='Skupina',
         help_text='Hlavní skupina nástrojů (např. smyčce, dřeva, žestě...)'
     )
 
     subgroup = models.CharField(
-        max_length=32,
+        max_length=20,
         choices=SUBGROUP_CHOICES,
         verbose_name='Podskupina',
         help_text='Podskupina nástrojů podle zvolené skupiny'
     )
 
     subsubgroup = models.CharField(
-        max_length=32,
+        max_length=13,
         choices=SUBSUBGROUP_CHOICES,
-        blank=True,
-        null=True,
         verbose_name='Dílčí podskupina',
         help_text='Dílčí podskupina (např. smyčec – pouze pro smyčce; nástroj/příslušenství/obal – pro všechny skupiny)'
     )
 
     item = models.CharField(
-        max_length=64,
-        verbose_name='Položka',
-        help_text='Název položky'
+        max_length=24,
+        verbose_name='Nástroj',
+        help_text='Co je to za nástroj?'
     )
 
     description = models.CharField(
-        max_length=128,
-        blank=True,
-        null=True,
-        verbose_name='Popis',
-        help_text='Detailní popis položky'
+        max_length=24,   # ✅ podle zadání max. 24 znaků
+        verbose_name='Výrobce, název, typ',
+        help_text='Výrobce, název, typ'
     )
 
     serial_number = models.CharField(
-        max_length=64,
+        max_length=12,
         blank=True,
         null=True,
         verbose_name='Sériové číslo',
@@ -138,7 +139,7 @@ class Inventory(models.Model):
             raise ValidationError({'subsubgroup': "Volba 'smyčec' je povolena pouze pro skupinu 'smyčce'."})
 
     def __str__(self):
-        return f"{self.group} – {self.subgroup} – {self.item}"
+        return f"{self.inv_num} – {self.group} – {self.subgroup} – {self.item} – {self.description}"
 
 class Purchasing(models.Model):
     # Primary key, auto increment for each purchase record
