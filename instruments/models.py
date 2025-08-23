@@ -228,7 +228,13 @@ class Purchases(models.Model):
             raise ValidationError(errors)
 
     def __str__(self):
-        return f"Purchase {self.id_purchases} – {self.supplier or 'Unknown'} ({self.purchase_date or 'Unknown'})"
+        supplier = self.supplier or "Unknown"
+        date = self.purchase_date or "Unknown"
+        item = self.inventory_item.item if self.inventory_item else "Unknown item"
+        inv_num = self.inventory_item.inv_num or "Unknown" if self.inventory_item else ""
+        price = self.price or "Unknown"
+        invoice = self.invoice or "Unknown"
+        return f"Purchase {self.id_purchases} – {supplier} ({date}) – {item} [{inv_num}] – {price} – Invoice: {invoice}"
 
 class Servicing(models.Model):
     # Primary key, auto increment for each service record
