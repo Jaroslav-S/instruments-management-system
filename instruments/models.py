@@ -388,34 +388,56 @@ class Rentals(models.Model):
 
 # Disposals model
 class Disposals(models.Model):
-    # ForeignKey to Inventory
-    inventory = models.ForeignKey(
+    # Possible disposal reasons
+    DISPOSAL_REASON_CHOICES = [
+        ('vyřazení', 'Vyřazení'),
+        ('poškození', 'Poškození'),
+        ('ztráta', 'Ztráta'),
+        ('odcizení', 'Odcizení'),
+        ('prodej', 'Prodej'),
+        ('jiné', 'Jiné'),
+    ]
+
+    # Primary key of the disposals table
+    id_disposals = models.AutoField(primary_key=True)
+
+    # Link to a specific item in Inventory
+    inventory_item = models.ForeignKey(
         Inventory,
         on_delete=models.CASCADE,
-        related_name='disposals',
-        verbose_name='Inventář'
+        related_name="disposals"
     )
 
-    # Unique ID for each disposal
-    id_disposal = models.AutoField(
-        primary_key=True,
-        verbose_name='ID vyřazení'
+    # Date of disposal
+    disposal_date = models.DateField(
+        verbose_name='Datum likvidace',
+        help_text='Datum, kdy byla položka zlikvidována'
     )
 
-    # Disposal date
-    date = models.DateField(
-        verbose_name='Datum vyřazení',
-        help_text='Datum vyřazení položky z inventáře'
+    # Reason for disposal (predefined choices)
+    disposal_reason = models.CharField(
+        max_length=10,
+        choices=DISPOSAL_REASON_CHOICES,
+        verbose_name='Důvod likvidace',
+        help_text='Vyberte důvod, proč byla položka zlikvidována'
     )
 
     # Optional note
-    note = models.CharField(
+    notes = models.CharField(
         max_length=24,
         blank=True,
-        null=True,
         verbose_name='Poznámka',
-        help_text='Poznámka k vyřazení (max. 24 znaků)'
+        help_text='Volitelná poznámka k likvidaci'
     )
 
     def __str__(self):
-        return f"Disposal {self.id_disposal} for {self.inventory.item}"
+        return f"Disposal {self.id_disposals} – {self.inventory_item} ({self.disposal_date}) – {self.disposal_reason}"
+
+    def clean(self):
+        errors = {}
+        if self.notes and len(self.notes) > 24:
+            errors['notes'] = "Poznámka může mít maximálně 24 znaků."
+        if self.disposal_reason not in dict(self.DISPOSAL_REASON_CHOICES):
+            errors['disposal_reason'] = "Neplatný důvod likvidace."
+        if errors:
+            raise ValidationError(errors)
