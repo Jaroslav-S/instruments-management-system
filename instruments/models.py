@@ -79,7 +79,7 @@ class Inventory(models.Model):
         help_text='filharmonické inventární číslo, pokud existuje'
     )
     group = models.CharField(
-        max_length=10,
+        max_length=14,
         choices=GROUP_CHOICES,
         verbose_name='Skupina',
         help_text='Hlavní skupina nástrojů (např. smyčce, dřeva, žestě...)'
@@ -91,7 +91,7 @@ class Inventory(models.Model):
         help_text='Podskupina nástrojů podle zvolené skupiny'
     )
     subsubgroup = models.CharField(
-        max_length=13,
+        max_length=14,
         choices=SUBSUBGROUP_CHOICES,
         verbose_name='Dílčí podskupina',
         help_text='Dílčí podskupina (např. smyčec – pouze pro smyčce; nástroj/příslušenství/obal – pro všechny skupiny)'
