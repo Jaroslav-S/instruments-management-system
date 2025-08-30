@@ -10,7 +10,8 @@ class LogEntry(models.Model):
         ('DELETE', 'Delete'),
     ]
 
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="User")
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, verbose_name="User",
+                             related_name="logs_logentry_set")
     action = models.CharField(max_length=10, choices=ACTION_CHOICES)
     timestamp = models.DateTimeField(auto_now_add=True)
 
