@@ -46,6 +46,8 @@ INSTALLED_APPS = [
 
     # Local apps
     'instruments',
+    'accounts',
+    'logs',
 ]
 
 MIDDLEWARE = [
