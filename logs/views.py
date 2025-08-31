@@ -10,11 +10,11 @@ def test_logging_view(request):
 
     # 1. Create a new Inventory item
     item = Inventory(
-        group='TestGroup',
-        subgroup='TestSubgroup',
-        subsubgroup='TestSubsubgroup',
+        group='TG',
+        subgroup='TSG',
+        subsubgroup='TSSG',
         item='TestItem',
-        description='Initial description'
+        description='Initial description',
     )
     item._current_user = user
     item.save()
