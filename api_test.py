@@ -3,7 +3,7 @@ from datetime import date
 
 # --- Nastavení ---
 BASE_URL = "http://127.0.0.1:8000/instruments/api/"
-TOKEN = "TVUJ_TOKEN_Z_DRF"  # nahraď tokenem testuser
+TOKEN = "d996554aa094bdd30f9aef7d5378962d42c56fc6"  # nahraď tokenem testuser
 
 HEADERS = {
     "Authorization": f"Token {TOKEN}",
