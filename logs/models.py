@@ -26,6 +26,8 @@ class LogEntry(models.Model):
 
     class Meta:
         ordering = ['-timestamp']
+        verbose_name = "Záznam logu"
+        verbose_name_plural = "Záznamy logů"
 
     def __str__(self):
         return f"{self.timestamp} - {self.user} - {self.action}"
