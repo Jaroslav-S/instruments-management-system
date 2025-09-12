@@ -160,6 +160,10 @@ class Inventory(models.Model):
         parts.append(f"({self.group} / {self.subgroup})")
         return " | ".join(parts)
 
+    class Meta:
+        verbose_name = "Inventář"
+        verbose_name_plural = "Inventáře"
+
 class Purchases(models.Model):
     # Primary key, auto increment for each purchase record
     id_purchase = models.AutoField(primary_key=True)
@@ -240,6 +244,10 @@ class Purchases(models.Model):
 
         if errors:
             raise ValidationError(errors)
+
+    class Meta:
+        verbose_name = "Nákup"
+        verbose_name_plural = "Nákupy"
 
 
 class Servicing(models.Model):
@@ -327,6 +335,10 @@ class Servicing(models.Model):
         if errors:
             raise ValidationError(errors)
 
+    class Meta:
+        verbose_name = "Servis"
+        verbose_name_plural = "Servisy"
+
 class Rentals(models.Model):
     # --- Primary Key ---
     id_rentals = models.AutoField(primary_key=True)
@@ -386,6 +398,10 @@ class Rentals(models.Model):
         if errors:
             raise ValidationError(errors)
 
+    class Meta:
+        verbose_name = "Zápůjčka"
+        verbose_name_plural = "Zápůjčky"
+
 # Disposals model
 class Disposals(models.Model):
     # Possible disposal reasons
@@ -441,3 +457,7 @@ class Disposals(models.Model):
             errors['disposal_reason'] = "Neplatný důvod likvidace."
         if errors:
             raise ValidationError(errors)
+
+    class Meta:
+        verbose_name = "Likvidace"
+        verbose_name_plural = "Likvidace"
