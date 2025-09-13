@@ -14,18 +14,18 @@
 </head>
 <body>
     <div class="menu-box">
-        <h2>Menu IMS</h2>
+        <h2>IMS Menu</h2>
         <div id="links">
-            <!-- odkazy budou vloženy JavaScriptem -->
+            <!-- Links will be injected here by JS -->
         </div>
         <div id="errorMsg"></div>
-        <a href="/login/" id="logoutLink">Odhlásit se</a>
+        <a href="/login/" id="logoutLink">Logout</a>
     </div>
 
     <script>
         // Logout function
         function logout(event) {
-            event.preventDefault(); // zamezí default redirectu
+            event.preventDefault(); // prevent default redirect
             sessionStorage.removeItem('access_token');
             sessionStorage.removeItem('refresh_token');
             sessionStorage.removeItem('role');
@@ -34,33 +34,37 @@
 
         const linksDiv = document.getElementById('links');
         const errorDiv = document.getElementById('errorMsg');
-        const role = sessionStorage.getItem('role');
 
-        if (!role) {
-            errorDiv.textContent = "Nejsi přihlášen. Přesměrování na login...";
+        // Get role from sessionStorage
+        const role = sessionStorage.getItem('role');
+        const accessToken = sessionStorage.getItem('access_token');
+
+        // Redirect to login if not authenticated
+        if (!accessToken || !role) {
+            errorDiv.textContent = "You are not logged in. Redirecting to login...";
             setTimeout(() => { window.location.href = '/login/'; }, 2000);
         } else {
-            // admin → všechny odkazy
+            // Admin → all links
             if (role === 'admin') {
-                linksDiv.innerHTML += '<a href="/frontend/user_management/">Správa uživatelů</a>';
-                linksDiv.innerHTML += '<a href="/frontend/data-entry/">Zadávání dat</a>';
-                linksDiv.innerHTML += '<a href="/frontend/view-data/">Zobrazení dat</a>';
+                linksDiv.innerHTML += '<a href="/frontend/user_management/">User Management</a>';
+                linksDiv.innerHTML += '<a href="/frontend/data-entry/">Data Entry</a>';
+                linksDiv.innerHTML += '<a href="/frontend/view-data/">View Data</a>';
             }
-            // uživatel s právem zápisu
+            // Write → data entry + view
             else if (role === 'write') {
-                linksDiv.innerHTML += '<a href="/frontend/data-entry/">Zadávání dat</a>';
-                linksDiv.innerHTML += '<a href="/frontend/view-data/">Zobrazení dat</a>';
+                linksDiv.innerHTML += '<a href="/frontend/data-entry/">Data Entry</a>';
+                linksDiv.innerHTML += '<a href="/frontend/view-data/">View Data</a>';
             }
-            // uživatel bez zápisu
+            // Read → view only
             else if (role === 'read') {
-                linksDiv.innerHTML += '<a href="/frontend/view-data/">Zobrazení dat</a>';
+                linksDiv.innerHTML += '<a href="/frontend/view-data/">View Data</a>';
             }
             else {
-                errorDiv.textContent = "Neznámá role. Kontaktuj administrátora.";
+                errorDiv.textContent = "Unknown role. Contact administrator.";
             }
         }
 
-        // přidej logout listener na odkaz
+        // Attach logout listener
         document.getElementById('logoutLink').addEventListener('click', logout);
     </script>
 </body>

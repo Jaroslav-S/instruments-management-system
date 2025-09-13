@@ -95,20 +95,21 @@
         <div class="success" id="disposalSuccess"></div>
     </form>
 
-    <a href="/frontend/menu/" id="backToMenu">Zpět do menu</a>
+    <a href="/frontend/menu/" id="backToMenu">Back to Menu</a>
 </div>
 
 <script>
-    // Přihlášení
+    // Get access token and role from sessionStorage
     const accessToken = sessionStorage.getItem('access_token');
     const role = sessionStorage.getItem('role');
 
+    // Redirect to login if not authenticated
     if (!accessToken || !role) {
-        alert('Nejsi přihlášen. Přesměrování na login.');
+        alert('You are not logged in. Redirecting to login.');
         window.location.href = '/login/';
     }
 
-    // Map forms
+    // Map forms for easy access
     const forms = {
         purchase: document.getElementById('purchaseForm'),
         servicing: document.getElementById('servicingForm'),
@@ -123,6 +124,7 @@
         if (forms[selected]) forms[selected].classList.remove('hidden');
     });
 
+    // Generic submit function
     async function submitData(url, payload, type) {
         const errorDiv = document.getElementById(type + 'Error');
         const successDiv = document.getElementById(type + 'Success');
@@ -134,13 +136,13 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${accessToken}`
+                    'Authorization': `Bearer ${accessToken}` // attach JWT
                 },
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error('Chyba při odesílání dat.');
-            successDiv.textContent = 'Data byla úspěšně uložena!';
+            if (!response.ok) throw new Error('Error submitting data.');
+            successDiv.textContent = 'Data saved successfully!';
             forms[type].reset();
 
         } catch (err) {
@@ -148,7 +150,7 @@
         }
     }
 
-    // Submit functions
+    // Submit wrappers for each form
     async function submitPurchase() { await submitData('/api/purchases/', {
         item: document.getElementById('purchaseItem').value,
         supplier: document.getElementById('supplier').value,
@@ -185,6 +187,5 @@
     }, 'disposal'); }
 
 </script>
-
 </body>
 </html>

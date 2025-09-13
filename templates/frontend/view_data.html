@@ -5,141 +5,105 @@
     <title>IMS - View Data</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
-        h1, h2 { text-align: center; }
-        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        h2 { text-align: center; }
+        table { width: 100%; border-collapse: collapse; margin: 20px 0; }
         th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
-        th { background-color: #eee; }
-        .logout, .back { display: inline-block; margin: 10px; text-decoration: none; color: #fff; background: #4CAF50; padding: 6px 12px; border-radius: 4px; }
-        .logout:hover, .back:hover { background: #45a049; }
-        #errorMsg { color: red; text-align: center; margin-bottom: 10px; }
+        th { background: #4CAF50; color: white; }
+        .error { color: red; margin-top: 10px; }
+        a { display: inline-block; margin-top: 10px; text-decoration: none; color: #fff; background: #4CAF50; padding: 8px 12px; border-radius: 4px; }
+        a:hover { background: #45a049; }
     </style>
 </head>
 <body>
 
-<a href="/frontend/menu/" class="back">Zpět do menu</a>
-<a href="/login/" class="logout" onclick="logout()">Odhlásit se</a>
+<h2>IMS - View Data</h2>
 
-<h1>IMS - View Data</h1>
-<div id="errorMsg"></div>
+<div id="dataContainer"></div>
 
-<!-- Inventory Table -->
-<h2>Inventory</h2>
-<table id="inventoryTable">
-    <thead>
-        <tr>
-            <th>ID</th><th>Inv Num</th><th>Group</th><th>Subgroup</th><th>Subsubgroup</th>
-            <th>Item</th><th>Description</th><th>Serial Number</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
-<!-- Purchases Table -->
-<h2>Purchases</h2>
-<table id="purchasesTable">
-    <thead>
-        <tr>
-            <th>ID</th><th>Inventory Item</th><th>Date</th><th>Supplier</th>
-            <th>Amount</th><th>Currency</th><th>Invoice</th><th>Notes</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
-<!-- Servicing Table -->
-<h2>Servicing</h2>
-<table id="servicingTable">
-    <thead>
-        <tr>
-            <th>ID</th><th>Inventory Item</th><th>Date</th><th>Supplier</th>
-            <th>Amount</th><th>Currency</th><th>Invoice</th><th>Notes</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
-<!-- Rentals Table -->
-<h2>Rentals</h2>
-<table id="rentalsTable">
-    <thead>
-        <tr>
-            <th>ID</th><th>Inventory Item</th><th>Action Date</th><th>Type</th><th>Renter</th><th>Notes</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
-
-<!-- Disposals Table -->
-<h2>Disposals</h2>
-<table id="disposalsTable">
-    <thead>
-        <tr>
-            <th>ID</th><th>Inventory Item</th><th>Date</th><th>Reason</th><th>Notes</th>
-        </tr>
-    </thead>
-    <tbody></tbody>
-</table>
+<a href="/frontend/menu/" id="backToMenu">Back to Menu</a>
 
 <script>
+    // Get access token and role from sessionStorage
     const accessToken = sessionStorage.getItem('access_token');
     const role = sessionStorage.getItem('role');
 
+    // Redirect to login if not authenticated
     if (!accessToken || !role) {
-        alert('Nejsi přihlášen. Přesměrování na login.');
+        alert('You are not logged in. Redirecting to login.');
         window.location.href = '/login/';
     }
 
-    function logout() {
-        sessionStorage.clear();
-        window.location.href = '/login/';
+    // Table endpoints mapping
+    const tables = {
+        inventory: '/api/inventory/',
+        purchases: '/api/purchases/',
+        servicings: '/api/servicings/',
+        rentals: '/api/rentals/',
+        disposals: '/api/disposals/'
+    };
+
+    // Fetch and render data
+    async function fetchTable(name, url) {
+        try {
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${accessToken}`
+                }
+            });
+            if (!response.ok) throw new Error(`Failed to fetch ${name} data`);
+            const data = await response.json();
+            renderTable(name, data);
+        } catch (err) {
+            const container = document.getElementById('dataContainer');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.textContent = `${name} error: ${err.message}`;
+            container.appendChild(errorDiv);
+        }
     }
 
-    async function fetchData(endpoint) {
-        const res = await fetch(endpoint, {
-            headers: { 'Authorization': `Bearer ${accessToken}` }
+    // Render table into DOM
+    function renderTable(name, data) {
+        if (!Array.isArray(data) || data.length === 0) return;
+        const container = document.getElementById('dataContainer');
+        const table = document.createElement('table');
+
+        // Table caption
+        const caption = document.createElement('caption');
+        caption.textContent = name.charAt(0).toUpperCase() + name.slice(1);
+        table.appendChild(caption);
+
+        // Table header
+        const thead = document.createElement('thead');
+        const headerRow = document.createElement('tr');
+        Object.keys(data[0]).forEach(key => {
+            const th = document.createElement('th');
+            th.textContent = key;
+            headerRow.appendChild(th);
         });
-        if (!res.ok) throw new Error(`Chyba při načítání ${endpoint}`);
-        return res.json();
-    }
+        thead.appendChild(headerRow);
+        table.appendChild(thead);
 
-    function populateTable(tableId, data, fields) {
-        const tbody = document.getElementById(tableId).querySelector('tbody');
-        tbody.innerHTML = '';
+        // Table body
+        const tbody = document.createElement('tbody');
         data.forEach(item => {
             const row = document.createElement('tr');
-            fields.forEach(f => {
+            Object.values(item).forEach(value => {
                 const td = document.createElement('td');
-                td.textContent = f.split('.').reduce((o,k) => o?.[k] ?? '', item);
+                td.textContent = value;
                 row.appendChild(td);
             });
             tbody.appendChild(row);
         });
+        table.appendChild(tbody);
+
+        container.appendChild(table);
     }
 
-    async function loadTables() {
-        const errorDiv = document.getElementById('errorMsg');
-        errorDiv.textContent = '';
-        try {
-            const [inventory, purchases, servicing, rentals, disposals] = await Promise.all([
-                fetchData('/api/inventory/'),
-                fetchData('/api/purchases/'),
-                fetchData('/api/servicings/'),
-                fetchData('/api/rentals/'),
-                fetchData('/api/disposals/')
-            ]);
-
-            populateTable('inventoryTable', inventory, ['id','inv_num','group','subgroup','subsubgroup','item','description','serial_number']);
-            populateTable('purchasesTable', purchases, ['id_purchase','inventory_item.id','purchase_date','supplier','amount','currency','invoice','notes']);
-            populateTable('servicingTable', servicing, ['id_servicing','inventory_item.id','service_date','supplier','amount','currency','invoice','notes']);
-            populateTable('rentalsTable', rentals, ['id_rentals','inventory_item.id','action_date','rental_type','renter_name','notes']);
-            populateTable('disposalsTable', disposals, ['id_disposals','inventory_item.id','disposal_date','disposal_reason','notes']);
-
-        } catch (err) {
-            errorDiv.textContent = err.message;
-        }
+    // Fetch all tables
+    for (const [name, url] of Object.entries(tables)) {
+        fetchTable(name, url);
     }
-
-    loadTables();
 </script>
 
 </body>
