@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>IMS - Menu</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .menu-box { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2); width: 400px; text-align: center; }
+        h2 { margin-bottom: 20px; }
+        a { display: block; margin: 10px 0; padding: 10px; text-decoration: none; color: white; background-color: #4CAF50; border-radius: 4px; }
+        a:hover { background-color: #45a049; }
+        #errorMsg { color: red; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="menu-box">
+        <h2>Menu IMS</h2>
+        <div id="links">
+            <!-- odkazy budou vloženy JavaScriptem -->
+        </div>
+        <div id="errorMsg"></div>
+        <a href="login.html" onclick="logout()">Odhlásit se</a>
+    </div>
+
+    <script>
+        function logout() {
+            sessionStorage.removeItem('token');
+            sessionStorage.removeItem('role');
+        }
+
+        const linksDiv = document.getElementById('links');
+        const errorDiv = document.getElementById('errorMsg');
+        const role = sessionStorage.getItem('role');
+
+        if (!role) {
+            errorDiv.textContent = "Nejsi přihlášen. Přesměrování na login...";
+            setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+        } else {
+            // admin → všechny odkazy
+            if (role === 'admin') {
+                linksDiv.innerHTML += '<a href="user_management.html">Správa uživatelů</a>';
+                linksDiv.innerHTML += '<a href="data_entry.html">Zadávání dat</a>';
+                linksDiv.innerHTML += '<a href="data_view.html">Zobrazení dat</a>';
+            }
+            // uživatel s právem zápisu
+            else if (role === 'write') {
+                linksDiv.innerHTML += '<a href="data_entry.html">Zadávání dat</a>';
+                linksDiv.innerHTML += '<a href="data_view.html">Zobrazení dat</a>';
+            }
+            // uživatel bez zápisu
+            else if (role === 'read') {
+                linksDiv.innerHTML += '<a href="data_view.html">Zobrazení dat</a>';
+            }
+            else {
+                errorDiv.textContent = "Neznámá role. Kontaktuj administrátora.";
+            }
+        }
+    </script>
+</body>
+</html>
