@@ -1,6 +1,10 @@
 from django.shortcuts import render
 
-# just static pages, login via REST API + JS
+# Static pages for frontend
+def login_page(request):
+    # Simply render login.html (JS handles REST API login)
+    return render(request, "frontend/login.html")
+
 def menu_page(request):
     return render(request, "frontend/menu.html")
 
