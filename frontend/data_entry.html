@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>IMS - Data Entry</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        h2 { text-align: center; }
+        select, input, button { display: block; margin: 10px 0; padding: 8px; width: 300px; }
+        .form-container { background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.2); max-width: 400px; margin: 0 auto; }
+        .hidden { display: none; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+
+<h2>IMS - Data Entry</h2>
+
+<div class="form-container">
+    <!-- Action type selection -->
+    <label for="actionType">Select action type:</label>
+    <select id="actionType">
+        <option value="">-- Select --</option>
+        <option value="purchase">Purchase</option>
+        <option value="servicing">Servicing</option>
+        <option value="rental">Rental</option>
+        <option value="disposal">Disposal</option>
+    </select>
+
+    <!-- Purchase form -->
+    <form id="purchaseForm" class="hidden">
+        <h3>Purchase</h3>
+        <input type="text" id="purchaseItem" placeholder="Item" maxlength="24">
+        <input type="text" id="supplier" placeholder="Supplier" maxlength="24">
+        <input type="date" id="purchaseDate">
+        <input type="number" step="0.01" id="amount" placeholder="Amount">
+        <input type="text" id="currency" placeholder="Currency" maxlength="3">
+        <input type="text" id="invoice" placeholder="Invoice" maxlength="12">
+        <input type="text" id="notes" placeholder="Notes" maxlength="24">
+        <button type="button" onclick="submitPurchase()">Submit Purchase</button>
+        <div class="error" id="purchaseError"></div>
+        <div class="success" id="purchaseSuccess"></div>
+    </form>
+
+    <!-- Servicing form -->
+    <form id="servicingForm" class="hidden">
+        <h3>Servicing</h3>
+        <input type="text" id="servicingItem" placeholder="Item" maxlength="24">
+        <input type="text" id="supplierServ" placeholder="Supplier" maxlength="24">
+        <input type="date" id="servicingDate">
+        <input type="number" step="0.01" id="amountServ" placeholder="Amount">
+        <input type="text" id="currencyServ" placeholder="Currency" maxlength="3">
+        <input type="text" id="invoiceServ" placeholder="Invoice" maxlength="12">
+        <input type="text" id="notesServ" placeholder="Notes" maxlength="24">
+        <button type="button" onclick="submitServicing()">Submit Servicing</button>
+        <div class="error" id="servicingError"></div>
+        <div class="success" id="servicingSuccess"></div>
+    </form>
+
+    <!-- Rental form -->
+    <form id="rentalForm" class="hidden">
+        <h3>Rental</h3>
+        <input type="text" id="rentalItem" placeholder="Item" maxlength="24">
+        <input type="date" id="rentalDate">
+        <input type="text" id="renterName" placeholder="Renter Name" maxlength="24">
+        <select id="rentalType">
+            <option value="loan">Loaned</option>
+            <option value="return">Returned</option>
+        </select>
+        <input type="text" id="notesRental" placeholder="Notes" maxlength="24">
+        <button type="button" onclick="submitRental()">Submit Rental</button>
+        <div class="error" id="rentalError"></div>
+        <div class="success" id="rentalSuccess"></div>
+    </form>
+
+    <!-- Disposal form -->
+    <form id="disposalForm" class="hidden">
+        <h3>Disposal</h3>
+        <input type="text" id="disposalItem" placeholder="Item" maxlength="24">
+        <input type="date" id="disposalDate">
+        <select id="disposalReason">
+            <option value="disposal">Disposal</option>
+            <option value="damage">Damage</option>
+            <option value="loss">Loss</option>
+            <option value="theft">Theft</option>
+            <option value="sale">Sale</option>
+            <option value="other">Other</option>
+        </select>
+        <input type="text" id="notesDisposal" placeholder="Notes" maxlength="24">
+        <button type="button" onclick="submitDisposal()">Submit Disposal</button>
+        <div class="error" id="disposalError"></div>
+        <div class="success" id="disposalSuccess"></div>
+    </form>
+</div>
+
+<script>
+    // Get action type selector
+    const actionType = document.getElementById('actionType');
+
+    // Map forms to their type
+    const forms = {
+        purchase: document.getElementById('purchaseForm'),
+        servicing: document.getElementById('servicingForm'),
+        rental: document.getElementById('rentalForm'),
+        disposal: document.getElementById('disposalForm')
+    };
+
+    // Show selected form, hide others
+    actionType.addEventListener('change', () => {
+        Object.values(forms).forEach(f => f.classList.add('hidden'));
+        const selected = actionType.value;
+        if (forms[selected]) forms[selected].classList.remove('hidden');
+    });
+
+    // Get JWT token from sessionStorage
+    const token = sessionStorage.getItem('token');
+
+    // Function to submit purchase data
+    async function submitPurchase() {
+        const payload = {
+            item: document.getElementById('purchaseItem').value,
+            supplier: document.getElementById('supplier').value,
+            purchase_date: document.getElementById('purchaseDate').value,
+            amount: parseFloat(document.getElementById('amount').value),
+            currency: document.getElementById('currency').value,
+            invoice: document.getElementById('invoice').value,
+            notes: document.getElementById('notes').value
+        };
+        await submitData('/api/purchases/', payload, 'purchase');
+    }
+
+    // Function to submit servicing data
+    async function submitServicing() {
+        const payload = {
+            inventory_item: document.getElementById('servicingItem').value,
+            supplier: document.getElementById('supplierServ').value,
+            service_date: document.getElementById('servicingDate').value,
+            amount: parseFloat(document.getElementById('amountServ').value),
+            currency: document.getElementById('currencyServ').value,
+            invoice: document.getElementById('invoiceServ').value,
+            notes: document.getElementById('notesServ').value
+        };
+        await submitData('/api/servicings/', payload, 'servicing');
+    }
+
+    // Function to submit rental data
+    async function submitRental() {
+        const payload = {
+            inventory_item: document.getElementById('rentalItem').value,
+            action_date: document.getElementById('rentalDate').value,
+            renter_name: document.getElementById('renterName').value,
+            rental_type: document.getElementById('rentalType').value,
+            notes: document.getElementById('notesRental').value
+        };
+        await submitData('/api/rentals/', payload, 'rental');
+    }
+
+    // Function to submit disposal data
+    async function submitDisposal() {
+        const payload = {
+            inventory_item: document.getElementById('disposalItem').value,
+            disposal_date: document.getElementById('disposalDate').value,
+            disposal_reason: document.getElementById('disposalReason').value,
+            notes: document.getElementById('notesDisposal').value
+        };
+        await submitData('/api/disposals/', payload, 'disposal');
+    }
+
+    // Generic function to send data to backend
+    async function submitData(url, payload, type) {
+        const errorDiv = document.getElementById(type + 'Error');
+        const successDiv = document.getElementById(type + 'Success');
+        errorDiv.textContent = '';
+        successDiv.textContent = '';
+
+        try {
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify(payload)
+            });
+
+            if (!response.ok) throw new Error('Error submitting data.');
+            successDiv.textContent = 'Data successfully submitted!';
+            // Optional: reset form
+            forms[type].reset();
+
+        } catch (err) {
+            errorDiv.textContent = err.message;
+        }
+    }
+</script>
+
+</body>
+</html>
