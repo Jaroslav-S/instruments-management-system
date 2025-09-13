@@ -1,8 +1,6 @@
 from django.shortcuts import render
 
-def login_page(request):
-    return render(request, "frontend/login.html")
-
+# just static pages, login via REST API + JS
 def menu_page(request):
     return render(request, "frontend/menu.html")
 
