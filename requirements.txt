@@ -6,3 +6,5 @@ sqlparse==0.5.3
 djangorestframework==3.16.1
 django-filter==25.1
 requests
+djangorestframework-simplejwt==5.5.1
+PyJWT==2.10.1
