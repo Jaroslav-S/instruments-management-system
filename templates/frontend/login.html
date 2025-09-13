@@ -36,7 +36,7 @@
             }
 
             try {
-                const response = await fetch('/api/token/', {  // endpoint REST API pro login
+                const response = await fetch('/api/token/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
@@ -48,14 +48,14 @@
 
                 const data = await response.json();
                 const token = data.access;  // JWT token
-                const role = data.role;     // role vrácená z backendu
+                const refresh = data.refresh; // Refresh token (pokud chceš ukládat)
 
-                // uložíme token a roli do sessionStorage
-                sessionStorage.setItem('token', token);
-                sessionStorage.setItem('role', role);
+                // Uložení tokenů do sessionStorage
+                sessionStorage.setItem('access_token', token);
+                sessionStorage.setItem('refresh_token', refresh);
 
-                // přesměrování na menu stránku
-                window.location.href = '/menu.html';
+                // Přesměrování na menu stránku
+                window.location.href = '/frontend/menu/';
 
             } catch (err) {
                 errorDiv.textContent = err.message;

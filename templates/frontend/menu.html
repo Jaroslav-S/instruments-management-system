@@ -19,13 +19,17 @@
             <!-- odkazy budou vloženy JavaScriptem -->
         </div>
         <div id="errorMsg"></div>
-        <a href="login.html" onclick="logout()">Odhlásit se</a>
+        <a href="/login/" id="logoutLink">Odhlásit se</a>
     </div>
 
     <script>
-        function logout() {
-            sessionStorage.removeItem('token');
+        // Logout function
+        function logout(event) {
+            event.preventDefault(); // zamezí default redirectu
+            sessionStorage.removeItem('access_token');
+            sessionStorage.removeItem('refresh_token');
             sessionStorage.removeItem('role');
+            window.location.href = '/login/';
         }
 
         const linksDiv = document.getElementById('links');
@@ -34,27 +38,30 @@
 
         if (!role) {
             errorDiv.textContent = "Nejsi přihlášen. Přesměrování na login...";
-            setTimeout(() => { window.location.href = 'login.html'; }, 2000);
+            setTimeout(() => { window.location.href = '/login/'; }, 2000);
         } else {
             // admin → všechny odkazy
             if (role === 'admin') {
-                linksDiv.innerHTML += '<a href="user_management.html">Správa uživatelů</a>';
-                linksDiv.innerHTML += '<a href="data_entry.html">Zadávání dat</a>';
-                linksDiv.innerHTML += '<a href="data_view.html">Zobrazení dat</a>';
+                linksDiv.innerHTML += '<a href="/frontend/user_management/">Správa uživatelů</a>';
+                linksDiv.innerHTML += '<a href="/frontend/data-entry/">Zadávání dat</a>';
+                linksDiv.innerHTML += '<a href="/frontend/view-data/">Zobrazení dat</a>';
             }
             // uživatel s právem zápisu
             else if (role === 'write') {
-                linksDiv.innerHTML += '<a href="data_entry.html">Zadávání dat</a>';
-                linksDiv.innerHTML += '<a href="data_view.html">Zobrazení dat</a>';
+                linksDiv.innerHTML += '<a href="/frontend/data-entry/">Zadávání dat</a>';
+                linksDiv.innerHTML += '<a href="/frontend/view-data/">Zobrazení dat</a>';
             }
             // uživatel bez zápisu
             else if (role === 'read') {
-                linksDiv.innerHTML += '<a href="data_view.html">Zobrazení dat</a>';
+                linksDiv.innerHTML += '<a href="/frontend/view-data/">Zobrazení dat</a>';
             }
             else {
                 errorDiv.textContent = "Neznámá role. Kontaktuj administrátora.";
             }
         }
+
+        // přidej logout listener na odkaz
+        document.getElementById('logoutLink').addEventListener('click', logout);
     </script>
 </body>
 </html>

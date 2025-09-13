@@ -11,6 +11,8 @@
         .hidden { display: none; }
         .error { color: red; }
         .success { color: green; }
+        a { display: inline-block; margin-top: 10px; text-decoration: none; color: #fff; background: #4CAF50; padding: 8px 12px; border-radius: 4px; }
+        a:hover { background: #45a049; }
     </style>
 </head>
 <body>
@@ -92,13 +94,21 @@
         <div class="error" id="disposalError"></div>
         <div class="success" id="disposalSuccess"></div>
     </form>
+
+    <a href="/frontend/menu/" id="backToMenu">Zpět do menu</a>
 </div>
 
 <script>
-    // Get action type selector
-    const actionType = document.getElementById('actionType');
+    // Přihlášení
+    const accessToken = sessionStorage.getItem('access_token');
+    const role = sessionStorage.getItem('role');
 
-    // Map forms to their type
+    if (!accessToken || !role) {
+        alert('Nejsi přihlášen. Přesměrování na login.');
+        window.location.href = '/login/';
+    }
+
+    // Map forms
     const forms = {
         purchase: document.getElementById('purchaseForm'),
         servicing: document.getElementById('servicingForm'),
@@ -106,68 +116,13 @@
         disposal: document.getElementById('disposalForm')
     };
 
-    // Show selected form, hide others
+    const actionType = document.getElementById('actionType');
     actionType.addEventListener('change', () => {
         Object.values(forms).forEach(f => f.classList.add('hidden'));
         const selected = actionType.value;
         if (forms[selected]) forms[selected].classList.remove('hidden');
     });
 
-    // Get JWT token from sessionStorage
-    const token = sessionStorage.getItem('token');
-
-    // Function to submit purchase data
-    async function submitPurchase() {
-        const payload = {
-            item: document.getElementById('purchaseItem').value,
-            supplier: document.getElementById('supplier').value,
-            purchase_date: document.getElementById('purchaseDate').value,
-            amount: parseFloat(document.getElementById('amount').value),
-            currency: document.getElementById('currency').value,
-            invoice: document.getElementById('invoice').value,
-            notes: document.getElementById('notes').value
-        };
-        await submitData('/api/purchases/', payload, 'purchase');
-    }
-
-    // Function to submit servicing data
-    async function submitServicing() {
-        const payload = {
-            inventory_item: document.getElementById('servicingItem').value,
-            supplier: document.getElementById('supplierServ').value,
-            service_date: document.getElementById('servicingDate').value,
-            amount: parseFloat(document.getElementById('amountServ').value),
-            currency: document.getElementById('currencyServ').value,
-            invoice: document.getElementById('invoiceServ').value,
-            notes: document.getElementById('notesServ').value
-        };
-        await submitData('/api/servicings/', payload, 'servicing');
-    }
-
-    // Function to submit rental data
-    async function submitRental() {
-        const payload = {
-            inventory_item: document.getElementById('rentalItem').value,
-            action_date: document.getElementById('rentalDate').value,
-            renter_name: document.getElementById('renterName').value,
-            rental_type: document.getElementById('rentalType').value,
-            notes: document.getElementById('notesRental').value
-        };
-        await submitData('/api/rentals/', payload, 'rental');
-    }
-
-    // Function to submit disposal data
-    async function submitDisposal() {
-        const payload = {
-            inventory_item: document.getElementById('disposalItem').value,
-            disposal_date: document.getElementById('disposalDate').value,
-            disposal_reason: document.getElementById('disposalReason').value,
-            notes: document.getElementById('notesDisposal').value
-        };
-        await submitData('/api/disposals/', payload, 'disposal');
-    }
-
-    // Generic function to send data to backend
     async function submitData(url, payload, type) {
         const errorDiv = document.getElementById(type + 'Error');
         const successDiv = document.getElementById(type + 'Success');
@@ -179,20 +134,56 @@
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${token}`
+                    'Authorization': `Bearer ${accessToken}`
                 },
                 body: JSON.stringify(payload)
             });
 
-            if (!response.ok) throw new Error('Error submitting data.');
-            successDiv.textContent = 'Data successfully submitted!';
-            // Optional: reset form
+            if (!response.ok) throw new Error('Chyba při odesílání dat.');
+            successDiv.textContent = 'Data byla úspěšně uložena!';
             forms[type].reset();
 
         } catch (err) {
             errorDiv.textContent = err.message;
         }
     }
+
+    // Submit functions
+    async function submitPurchase() { await submitData('/api/purchases/', {
+        item: document.getElementById('purchaseItem').value,
+        supplier: document.getElementById('supplier').value,
+        purchase_date: document.getElementById('purchaseDate').value,
+        amount: parseFloat(document.getElementById('amount').value),
+        currency: document.getElementById('currency').value,
+        invoice: document.getElementById('invoice').value,
+        notes: document.getElementById('notes').value
+    }, 'purchase'); }
+
+    async function submitServicing() { await submitData('/api/servicings/', {
+        inventory_item: document.getElementById('servicingItem').value,
+        supplier: document.getElementById('supplierServ').value,
+        service_date: document.getElementById('servicingDate').value,
+        amount: parseFloat(document.getElementById('amountServ').value),
+        currency: document.getElementById('currencyServ').value,
+        invoice: document.getElementById('invoiceServ').value,
+        notes: document.getElementById('notesServ').value
+    }, 'servicing'); }
+
+    async function submitRental() { await submitData('/api/rentals/', {
+        inventory_item: document.getElementById('rentalItem').value,
+        action_date: document.getElementById('rentalDate').value,
+        renter_name: document.getElementById('renterName').value,
+        rental_type: document.getElementById('rentalType').value,
+        notes: document.getElementById('notesRental').value
+    }, 'rental'); }
+
+    async function submitDisposal() { await submitData('/api/disposals/', {
+        inventory_item: document.getElementById('disposalItem').value,
+        disposal_date: document.getElementById('disposalDate').value,
+        disposal_reason: document.getElementById('disposalReason').value,
+        notes: document.getElementById('notesDisposal').value
+    }, 'disposal'); }
+
 </script>
 
 </body>
