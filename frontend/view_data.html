@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <title>INVENTORY MANAGEMENT SYSTEM - View Data</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f5f5f5; padding: 20px; }
+        h2 { margin-top: 40px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 10px; }
+        th, td { border: 1px solid #ccc; padding: 8px; text-align: left; }
+        th { background-color: #eee; }
+        .logout { float: right; margin-top: -40px; }
+    </style>
+</head>
+<body>
+    <button class="logout" onclick="logout()">Logout</button>
+    <h1>View Data</h1>
+    <div id="errorMsg" style="color:red;"></div>
+
+    <!-- Inventory Table -->
+    <h2>Inventory</h2>
+    <table id="inventoryTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Inv Num</th><th>Group</th><th>Subgroup</th><th>Subsubgroup</th>
+                <th>Item</th><th>Description</th><th>Serial Number</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Purchases Table -->
+    <h2>Purchases</h2>
+    <table id="purchasesTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Inventory Item</th><th>Date</th><th>Supplier</th>
+                <th>Amount</th><th>Currency</th><th>Invoice</th><th>Notes</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Servicing Table -->
+    <h2>Servicing</h2>
+    <table id="servicingTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Inventory Item</th><th>Date</th><th>Supplier</th>
+                <th>Amount</th><th>Currency</th><th>Invoice</th><th>Notes</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Rentals Table -->
+    <h2>Rentals</h2>
+    <table id="rentalsTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Inventory Item</th><th>Action Date</th><th>Type</th><th>Renter</th><th>Notes</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Disposals Table -->
+    <h2>Disposals</h2>
+    <table id="disposalsTable">
+        <thead>
+            <tr>
+                <th>ID</th><th>Inventory Item</th><th>Date</th><th>Reason</th><th>Notes</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <script>
+        // Check JWT and role
+        const token = sessionStorage.getItem('token');
+        const role = sessionStorage.getItem('role');
+
+        if (!token) {
+            alert('You are not logged in!');
+            window.location.href = '/login.html';
+        }
+
+        // Logout function
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = '/login.html';
+        }
+
+        async function fetchData(endpoint) {
+            const res = await fetch(endpoint, {
+                headers: { 'Authorization': 'Bearer ' + token }
+            });
+            if (!res.ok) {
+                throw new Error(`Failed to fetch ${endpoint}`);
+            }
+            return res.json();
+        }
+
+        async function loadTables() {
+            const errorDiv = document.getElementById('errorMsg');
+            errorDiv.textContent = '';
+
+            try {
+                const inventory = await fetchData('/api/inventory/');
+                const purchases = await fetchData('/api/purchases/');
+                const servicing = await fetchData('/api/servicing/');
+                const rentals = await fetchData('/api/rentals/');
+                const disposals = await fetchData('/api/disposals/');
+
+                function populateTable(tableId, data, fields) {
+                    const tbody = document.getElementById(tableId).querySelector('tbody');
+                    tbody.innerHTML = '';
+                    data.forEach(item => {
+                        const row = document.createElement('tr');
+                        fields.forEach(f => {
+                            const td = document.createElement('td');
+                            td.textContent = f.split('.').reduce((o,k) => o[k] || '', item);
+                            row.appendChild(td);
+                        });
+                        tbody.appendChild(row);
+                    });
+                }
+
+                populateTable('inventoryTable', inventory, ['id', 'inv_num', 'group', 'subgroup', 'subsubgroup', 'item', 'description', 'serial_number']);
+                populateTable('purchasesTable', purchases, ['id_purchase', 'inventory_item.id', 'purchase_date', 'supplier', 'amount', 'currency', 'invoice', 'notes']);
+                populateTable('servicingTable', servicing, ['id_servicing', 'inventory_item.id', 'service_date', 'supplier', 'amount', 'currency', 'invoice', 'notes']);
+                populateTable('rentalsTable', rentals, ['id_rentals', 'inventory_item.id', 'action_date', 'rental_type', 'renter_name', 'notes']);
+                populateTable('disposalsTable', disposals, ['id_disposals', 'inventory_item.id', 'disposal_date', 'disposal_reason', 'notes']);
+
+            } catch (err) {
+                errorDiv.textContent = err.message;
+            }
+        }
+
+        loadTables();
+    </script>
+</body>
+</html>
