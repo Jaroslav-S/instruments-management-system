@@ -1,7 +1,6 @@
 from django.contrib import admin
 from django.urls import path, include
 from frontend import views as frontend_views
-from django.views.generic import RedirectView
 from rest_framework_simplejwt.views import TokenRefreshView
 
 urlpatterns = [
@@ -11,8 +10,8 @@ urlpatterns = [
     # Logs
     path('logs/', include('logs.urls')),
 
-    # REST API app
-    path('api/', include('instruments.urls')),
+    # Instruments app (REST API + HTML views)
+    path('instruments/', include('instruments.urls')),  # teď pod /instruments/
 
     # Accounts (custom JWT with role)
     path("api/accounts/", include("accounts.urls")),
