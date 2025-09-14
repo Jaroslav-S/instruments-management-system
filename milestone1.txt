@@ -1,0 +1,19 @@
+Milestone 1 – Project Requirements Status
+
+- The project is a Django application: ✅
+- At least 5 models: Inventory, Purchases, Servicing, Rentals, Disposals (plus optional Manufacturer, Accessory) ✅
+- Uses PostgreSQL: ✅
+- ≥3 tables and ≥2 relations (excluding Django’s own): Inventory ↔ Rentals, Inventory ↔ Purchases, Inventory ↔ Accessories, Inventory ↔ Manufacturer ✅
+- Includes 1:many and many:many relationships: ✅
+- At least 5 views mapped to URLs: Inventory, Purchases, Servicing, Rentals, Disposals ✅
+- Has a view available only to logged-in users: Rentals POST requires authentication ✅
+- Has at least one form handled via POST: Rentals POST ✅
+- Pytest tests present: All API and model tests passing ✅
+
+
+
+Milestone 2 – To be done
+
+- Superuser login: ✅ done
+- Web interface to add data via Purchases into Inventory: ✅ to implement
+- Display added Inventory data through views: ✅ to implement
