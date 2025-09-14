@@ -1,18 +1,19 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render
 from django.http import HttpResponse
-from .forms import RentalForm
+from instruments.models import Inventory
 
 def create_rental(request):
-    if request.method == "POST":
-        form = RentalForm(request.POST)
-        if form.is_valid():
-            rental = form.save(commit=False)
-            rental.user = request.user  # přihlášený uživatel
-            rental.save()
-            return redirect("rental_success")
-    else:
-        form = RentalForm()
-    return render(request, "instruments/create_rental.html", {"form": form})
+    """
+    Renders the Rental creation form with inventory items.
+    The form is submitted via JavaScript POST to the REST API endpoint.
+    """
+    inventory_items = Inventory.objects.all().order_by('item')
+    return render(request, "instruments/create_rental.html", {
+        "inventory_items": inventory_items
+    })
 
 def rental_success(request):
+    """
+    Simple success page for Rentals (not used by JS POST, kept for fallback/consistency).
+    """
     return HttpResponse("Rental created successfully!")

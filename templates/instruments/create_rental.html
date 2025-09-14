@@ -1,14 +1,60 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Create Rental</title>
-</head>
-<body>
-    <h1>Create Rental</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit">Submit</button>
-    </form>
-</body>
-</html>
+{% extends "base.html" %}
+
+{% block content %}
+<h2>New Rental</h2>
+
+<form id="rentalForm">
+    <label for="instrument">Instrument:</label>
+    <select id="instrument" name="instrument">
+        {% for item in inventory_items %}
+        <option value="{{ item.id }}">{{ item.item }} ({{ item.group }} / {{ item.subgroup }})</option>
+        {% endfor %}
+    </select>
+    <br><br>
+
+    <label for="start_date">Start Date:</label>
+    <input type="date" id="start_date" name="start_date" required>
+    <br><br>
+
+    <label for="end_date">End Date:</label>
+    <input type="date" id="end_date" name="end_date">
+    <br><br>
+
+    <button type="submit">Create Rental</button>
+</form>
+
+<div id="result"></div>
+
+<script>
+document.getElementById('rentalForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+
+    const token = sessionStorage.getItem('access_token');  // Změna na sessionStorage
+    const instrument = document.getElementById('instrument').value;
+    const start_date = document.getElementById('start_date').value;
+    const end_date = document.getElementById('end_date').value;
+
+    const payload = {
+        instrument: instrument,
+        start_date: start_date,
+        end_date: end_date
+    };
+
+    const response = await fetch('/instruments/api/rentals/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(payload)
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+        document.getElementById('result').innerHTML = "Rental created successfully!";
+    } else {
+        document.getElementById('result').innerHTML = "Error: " + JSON.stringify(data);
+    }
+});
+</script>
+{% endblock %}

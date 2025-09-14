@@ -151,7 +151,7 @@
     }
 
     // Submit wrappers for each form
-    async function submitPurchase() { await submitData('/api/purchases/', {
+    async function submitPurchase() { await submitData('/instruments/api/purchases/', {
         item: document.getElementById('purchaseItem').value,
         supplier: document.getElementById('supplier').value,
         purchase_date: document.getElementById('purchaseDate').value,
@@ -161,7 +161,7 @@
         notes: document.getElementById('notes').value
     }, 'purchase'); }
 
-    async function submitServicing() { await submitData('/api/servicings/', {
+    async function submitServicing() { await submitData('/instruments/api/servicings/', {
         inventory_item: document.getElementById('servicingItem').value,
         supplier: document.getElementById('supplierServ').value,
         service_date: document.getElementById('servicingDate').value,
@@ -171,7 +171,7 @@
         notes: document.getElementById('notesServ').value
     }, 'servicing'); }
 
-    async function submitRental() { await submitData('/api/rentals/', {
+    async function submitRental() { await submitData('/instruments/api/rentals/', {
         inventory_item: document.getElementById('rentalItem').value,
         action_date: document.getElementById('rentalDate').value,
         renter_name: document.getElementById('renterName').value,
@@ -179,7 +179,7 @@
         notes: document.getElementById('notesRental').value
     }, 'rental'); }
 
-    async function submitDisposal() { await submitData('/api/disposals/', {
+    async function submitDisposal() { await submitData('/instruments/api/disposals/', {
         inventory_item: document.getElementById('disposalItem').value,
         disposal_date: document.getElementById('disposalDate').value,
         disposal_reason: document.getElementById('disposalReason').value,
