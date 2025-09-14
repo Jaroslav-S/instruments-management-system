@@ -1,10 +1,11 @@
 from django.db import models
 from django.core.exceptions import ValidationError
+from django.conf import settings
 
+# -----------------------------
+# Inventory
+# -----------------------------
 class Inventory(models.Model):
-    # -----------------------------
-    # Main group of instruments
-    # -----------------------------
     GROUP_CHOICES = [
         ('smyčce', 'Smyčce'),
         ('dřeva', 'Dřeva'),
@@ -15,126 +16,36 @@ class Inventory(models.Model):
         ('elektronika', 'Elektronika'),
     ]
 
-    # -----------------------------
-    # Subgroup (depends on group)
-    # -----------------------------
     SUBGROUP_CHOICES = [
-        # Strings
-        ('housle', 'Housle'),
-        ('violy', 'Violy'),
-        ('violoncella', 'Violoncella'),
-        ('kontrabasy', 'Kontrabasy'),
-        ('smyčce ostatní', 'Ostatní (smyčce)'),
-
-        # Woodwinds
-        ('flétny', 'Flétny'),
-        ('hoboje', 'Hoboje'),
-        ('klarinety', 'Klarinety'),
-        ('fagoty', 'Fagoty'),
-        ('dřeva ostatní', 'Ostatní (dřeva)'),
-
-        # Brass
-        ('lesní rohy', 'Lesní rohy'),
-        ('trumpety', 'Trumpety'),
-        ('trombony', 'Trombony'),
-        ('tuby', 'Tuby'),
-        ('žestě ostatní', 'Ostatní (žestě)'),
-
-        # Percussion
-        ('bicí', 'Bicí'),
-        ('bicí ostatní', 'Ostatní (bicí)'),
-
-        # Harps
-        ('harfy', 'Harfy'),
-        ('harfy ostatní', 'Ostatní (harfy)'),
-
-        # Pianos
-        ('klavíry', 'Klavíry'),
-        ('klavíry ostatní', 'Ostatní (klavíry)'),
-
-        # Electronics
-        ('klávesy', 'Klávesy'),
-        ('elektronika ostatní', 'Ostatní (elektronika)'),
+        ('housle', 'Housle'), ('violy', 'Violy'), ('violoncella', 'Violoncella'), ('kontrabasy', 'Kontrabasy'), ('smyčce ostatní', 'Ostatní (smyčce)'),
+        ('flétny', 'Flétny'), ('hoboje', 'Hoboje'), ('klarinety', 'Klarinety'), ('fagoty', 'Fagoty'), ('dřeva ostatní', 'Ostatní (dřeva)'),
+        ('lesní rohy', 'Lesní rohy'), ('trumpety', 'Trumpety'), ('trombony', 'Trombony'), ('tuby', 'Tuby'), ('žestě ostatní', 'Ostatní (žestě)'),
+        ('bicí', 'Bicí'), ('bicí ostatní', 'Ostatní (bicí)'),
+        ('harfy', 'Harfy'), ('harfy ostatní', 'Ostatní (harfy)'),
+        ('klavíry', 'Klavíry'), ('klavíry ostatní', 'Ostatní (klavíry)'),
+        ('klávesy', 'Klávesy'), ('elektronika ostatní', 'Ostatní (elektronika)'),
     ]
 
-    # -----------------------------
-    # Sub-subgroup
-    # -----------------------------
     SUBSUBGROUP_CHOICES = [
-        ('smyčec', 'Smyčec'),                # only valid for group = smyčce
-        ('nástroj', 'Nástroj'),              # valid for all groups
-        ('příslušenství', 'Příslušenství'),  # valid for all groups
-        ('obal', 'Obal'),                    # valid for all groups
+        ('smyčec', 'Smyčec'),
+        ('nástroj', 'Nástroj'),
+        ('příslušenství', 'Příslušenství'),
+        ('obal', 'Obal'),
     ]
 
-    # -----------------------------
-    # Fields
-    # -----------------------------
     id = models.AutoField(primary_key=True)
-    inv_num = models.CharField(
-        max_length=10,
-        blank=True,
-        null=True,
-        verbose_name='inventární číslo',
-        help_text='filharmonické inventární číslo, pokud existuje'
-    )
-    group = models.CharField(
-        max_length=14,
-        choices=GROUP_CHOICES,
-        verbose_name='Skupina',
-        help_text='Hlavní skupina nástrojů (např. smyčce, dřeva, žestě...)'
-    )
-    subgroup = models.CharField(
-        max_length=20,
-        choices=SUBGROUP_CHOICES,
-        verbose_name='Podskupina',
-        help_text='Podskupina nástrojů podle zvolené skupiny'
-    )
-    subsubgroup = models.CharField(
-        max_length=14,
-        choices=SUBSUBGROUP_CHOICES,
-        verbose_name='Dílčí podskupina',
-        help_text='Dílčí podskupina (např. smyčec – pouze pro smyčce; nástroj/příslušenství/obal – pro všechny skupiny)'
-    )
-    item = models.CharField(
-        max_length=24,
-        verbose_name='Nástroj',
-        help_text='Co je to za nástroj?'
-    )
-    description = models.CharField(
-        max_length=24,
-        verbose_name='Výrobce, název, typ',
-        help_text='Výrobce, název, typ'
-    )
-    serial_number = models.CharField(
-        max_length=12,
-        blank=True,
-        null=True,
-        verbose_name='Sériové číslo',
-        help_text='Sériové číslo nástroje nebo příslušenství'
-    )
-    manufacturer = models.ForeignKey(
-        "Manufacturer",
-        on_delete=models.SET_NULL,
-        null=True,
-        blank=True,
-        related_name="instruments",
-        verbose_name="Výrobce"
-    )
-    accessories = models.ManyToManyField(
-        "Accessory",
-        blank=True,
-        related_name="instruments",
-        verbose_name="Příslušenství"
-    )
+    inv_num = models.CharField(max_length=10, blank=True, null=True, verbose_name='inventární číslo', help_text='filharmonické inventární číslo, pokud existuje')
+    group = models.CharField(max_length=14, choices=GROUP_CHOICES, verbose_name='Skupina', help_text='Hlavní skupina nástrojů')
+    subgroup = models.CharField(max_length=20, choices=SUBGROUP_CHOICES, verbose_name='Podskupina', help_text='Podskupina nástrojů')
+    subsubgroup = models.CharField(max_length=14, choices=SUBSUBGROUP_CHOICES, verbose_name='Dílčí podskupina', help_text='Dílčí podskupina')
+    item = models.CharField(max_length=24, verbose_name='Nástroj', help_text='Co je to za nástroj?')
+    description = models.CharField(max_length=24, verbose_name='Výrobce, název, typ', help_text='Výrobce, název, typ')
+    serial_number = models.CharField(max_length=12, blank=True, null=True, verbose_name='Sériové číslo', help_text='Sériové číslo nástroje nebo příslušenství')
+    manufacturer = models.ForeignKey("Manufacturer", on_delete=models.SET_NULL, null=True, blank=True, related_name="instruments", verbose_name="Výrobce")
+    accessories = models.ManyToManyField("Accessory", blank=True, related_name="instruments", verbose_name="Příslušenství")
 
-    # -----------------------------
-    # Validation (consistent with Purchases & Servicing)
-    # -----------------------------
     def clean(self):
         errors = {}
-
-        # Validate subgroup vs group
         valid_subgroups = {
             'smyčce': ['housle', 'violy', 'violoncella', 'kontrabasy', 'smyčce ostatní'],
             'dřeva': ['flétny', 'hoboje', 'klarinety', 'fagoty', 'dřeva ostatní'],
@@ -146,12 +57,8 @@ class Inventory(models.Model):
         }
         if self.subgroup not in valid_subgroups.get(self.group, []):
             errors['subgroup'] = f"Podskupina '{self.subgroup}' není platná pro skupinu '{self.group}'."
-
-        # Validate subsubgroup vs group
         if self.subsubgroup == 'smyčec' and self.group != 'smyčce':
             errors['subsubgroup'] = "Volba 'smyčec' je povolena pouze pro skupinu 'smyčce'."
-
-        # Field length validations (matching Purchases & Servicing style)
         if self.inv_num and len(self.inv_num) > 10:
             errors['inv_num'] = "Inventární číslo může mít maximálně 10 znaků."
         if self.item and len(self.item) > 24:
@@ -160,13 +67,9 @@ class Inventory(models.Model):
             errors['description'] = "Popis může mít maximálně 24 znaků."
         if self.serial_number and len(self.serial_number) > 12:
             errors['serial_number'] = "Sériové číslo může mít maximálně 12 znaků."
-
         if errors:
             raise ValidationError(errors)
 
-    # -----------------------------
-    # String representation (consistent style)
-    # -----------------------------
     def __str__(self):
         parts = [f"{self.inv_num or 'Unknown'} – {self.item}"]
         if self.serial_number:
@@ -178,62 +81,56 @@ class Inventory(models.Model):
         verbose_name = "Inventář"
         verbose_name_plural = "Inventáře"
 
-class Purchases(models.Model):
-    # Primary key, auto increment for each purchase record
-    id_purchase = models.AutoField(primary_key=True)
 
-    # Foreign key linking to Inventory (table 1)
+# -----------------------------
+# Rentals (starý)
+# -----------------------------
+class Rentals(models.Model):
     inventory_item = models.ForeignKey(
         Inventory,
         on_delete=models.CASCADE,
-        related_name="purchases"
+        related_name="old_rentals"
     )
-
-    # Purchase date (user input, cannot be empty)
-    purchase_date = models.DateField(
-        verbose_name='Datum nákupu',
-        help_text='Datum pořízení nástroje, povinné'
-    )
-
-    # Supplier name (max 24 chars, required)
-    supplier = models.CharField(
-        max_length=24,
-        verbose_name='Dodavatel',
-        help_text='Dodavatel nástroje, povinné'
-    )
-
-    # price - amount, user input, required
-    amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        verbose_name='Cena',
-        help_text='Částka podle faktury, povinné'
-    )
-
-    # price - currency, user input, required
-    currency = models.CharField(
-        max_length=3,
-        verbose_name='Měna',
-        help_text='Měna podle faktury, povinné'
-    )
-
-    # Invoice number (max 12 chars, can include non-numeric chars, required)
-    invoice = models.CharField(
-        max_length=12,
-        verbose_name='Faktura',
-        help_text='Číslo faktury, povinné'
-    )
-
-    # Notes (max 24 chars, optional)
-    notes = models.CharField(
-        max_length=24,
-        blank=True,
-        verbose_name='Poznámka',
-        help_text='Volitelná poznámka k nákupu'
-    )
+    renter_name = models.CharField(max_length=255)
+    rental_date = models.DateField()
+    return_date = models.DateField(null=True, blank=True)
+    rental_type = models.CharField(max_length=50)
 
     def __str__(self):
-        # String representation showing supplier, date, invoice, amount and currency
+        return f"{self.renter_name} - {self.inventory_item}"
+
+
+# -----------------------------
+# Rental (nový, pro form)
+# -----------------------------
+class Rental(models.Model):
+    instrument = models.ForeignKey(
+        Inventory,
+        on_delete=models.CASCADE,
+        related_name="new_rentals"
+    )
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="rentals")
+    start_date = models.DateField()
+    end_date = models.DateField(null=True, blank=True)
+
+    def __str__(self):
+        return f"{self.instrument} rented by {self.user} from {self.start_date} to {self.end_date or 'ongoing'}"
+
+
+# -----------------------------
+# Purchases, Servicing, Disposals
+# -----------------------------
+class Purchases(models.Model):
+    id_purchase = models.AutoField(primary_key=True)
+    inventory_item = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name="purchases")
+    purchase_date = models.DateField(verbose_name='Datum nákupu', help_text='Datum pořízení nástroje, povinné')
+    supplier = models.CharField(max_length=24, verbose_name='Dodavatel', help_text='Dodavatel nástroje, povinné')
+    amount = models.DecimalField(max_digits=12, decimal_places=2, verbose_name='Cena', help_text='Částka podle faktury, povinné')
+    currency = models.CharField(max_length=3, verbose_name='Měna', help_text='Měna podle faktury, povinné')
+    invoice = models.CharField(max_length=12, verbose_name='Faktura', help_text='Číslo faktury, povinné')
+    notes = models.CharField(max_length=24, blank=True, verbose_name='Poznámka', help_text='Volitelná poznámka k nákupu')
+
+    def __str__(self):
         parts = [f"Purchase {self.id_purchase} – {self.supplier} ({self.purchase_date})"]
         parts.append(f"{self.amount} {self.currency}")
         parts.append(f"Invoice: {self.invoice}")
@@ -243,8 +140,6 @@ class Purchases(models.Model):
 
     def clean(self):
         errors = {}
-
-        # fields length validation
         if self.supplier and len(self.supplier) > 24:
             errors['supplier'] = "Dodavatel může mít maximálně 24 znaků."
         if self.amount is not None and self.amount < 0:
@@ -255,7 +150,6 @@ class Purchases(models.Model):
             errors['invoice'] = "Číslo faktury může mít maximálně 12 znaků."
         if self.notes and len(self.notes) > 24:
             errors['notes'] = "Poznámka může mít maximálně 24 znaků."
-
         if errors:
             raise ValidationError(errors)
 
@@ -264,66 +158,18 @@ class Purchases(models.Model):
         verbose_name_plural = "Nákupy"
 
 
+# Servicing
 class Servicing(models.Model):
-    # Primary key, auto increment for each service record
     id_servicing = models.AutoField(primary_key=True)
-
-    # Foreign key linking to Inventory (table 1)
-    inventory_item = models.ForeignKey(
-        Inventory,
-        on_delete=models.CASCADE,
-        related_name="servicings"
-    )
-
-    # Service date (user input, cannot be empty)
-    service_date = models.DateField(
-        verbose_name='Datum',
-        help_text='Datum servisu, povinné'
-    )
-
-    # Supplier name (max 24 chars, required)
-    supplier = models.CharField(
-        max_length=24,
-        verbose_name='Dodavatel',
-        help_text='Dodavatel servisu, povinné'
-    )
-
-    # price - amount, user input, can be empty when unknown
-    amount = models.DecimalField(
-        max_digits=12,
-        decimal_places=2,
-        null=True,
-        blank=True,
-        verbose_name='Cena',
-        help_text='Částka podle faktury, pokud je neznámá, nech prázdné'
-    )
-
-    # price - currency, user input, can be empty when unknown
-    currency = models.CharField(
-        max_length=3,
-        blank=True,
-        verbose_name='Měna',
-        help_text='Měna podle faktury, pokud je neznámá, nech prázdné'
-    )
-
-    # Invoice number (max 12 chars, can include non-numeric chars, optional)
-    invoice = models.CharField(
-        max_length=12,
-        blank=True,
-        verbose_name='Faktura',
-        help_text='Číslo faktury, může být prázdné'
-    )
-
-    # Notes (max 24 chars, optional)
-    notes = models.CharField(
-        max_length=24,
-        blank=True,
-        verbose_name='Poznámka',
-        help_text='Volitelná poznámka k servisu'
-    )
+    inventory_item = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name="servicings")
+    service_date = models.DateField(verbose_name='Datum', help_text='Datum servisu, povinné')
+    supplier = models.CharField(max_length=24, verbose_name='Dodavatel', help_text='Dodavatel servisu, povinné')
+    amount = models.DecimalField(max_digits=12, decimal_places=2, null=True, blank=True, verbose_name='Cena', help_text='Částka podle faktury, pokud je neznámá, nech prázdné')
+    currency = models.CharField(max_length=3, blank=True, verbose_name='Měna', help_text='Měna podle faktury, pokud je neznámá, nech prázdné')
+    invoice = models.CharField(max_length=12, blank=True, verbose_name='Faktura', help_text='Číslo faktury, může být prázdné')
+    notes = models.CharField(max_length=24, blank=True, verbose_name='Poznámka', help_text='Volitelná poznámka k servisu')
 
     def __str__(self):
-        # String representation showing supplier, date, invoice, amount and currency
         parts = [f"Servicing {self.id_servicing} – {self.supplier} ({self.service_date})"]
         if self.amount:
             parts.append(f"{self.amount} {self.currency or ''}".strip())
@@ -333,8 +179,6 @@ class Servicing(models.Model):
 
     def clean(self):
         errors = {}
-
-        # fields length validation
         if self.supplier and len(self.supplier) > 24:
             errors['supplier'] = "Dodavatel může mít maximálně 24 znaků."
         if self.amount is not None and self.amount < 0:
@@ -345,7 +189,6 @@ class Servicing(models.Model):
             errors['invoice'] = "Číslo faktury může mít maximálně 12 znaků."
         if self.notes and len(self.notes) > 24:
             errors['notes'] = "Poznámka může mít maximálně 24 znaků."
-
         if errors:
             raise ValidationError(errors)
 
@@ -353,112 +196,19 @@ class Servicing(models.Model):
         verbose_name = "Servis"
         verbose_name_plural = "Servisy"
 
-class Rentals(models.Model):
-    # --- Primary Key ---
-    id_rentals = models.AutoField(primary_key=True)
 
-    # --- Foreign Keys ---
-    inventory_item = models.ForeignKey(
-        Inventory,
-        on_delete=models.CASCADE,
-        related_name="rentals"
-    )
-
-    # --- Data fields ---
-    RENTAL_TYPE_CHOICES = [
-        ('loan', 'Zápůjčka'),
-        ('return', 'Vrácení'),
-    ]
-
-    action_date = models.DateField(
-        verbose_name='Datum akce',
-        help_text='Datum zápůjčky nebo vrácení'
-    )
-
-    rental_type = models.CharField(
-        max_length=6,
-        choices=RENTAL_TYPE_CHOICES,
-        verbose_name='Typ akce',
-        help_text='Zda jde o zápůjčku nebo vrácení'
-    )
-
-    renter_name = models.CharField(
-        max_length=24,
-        verbose_name='Jméno půjčitele',
-        help_text='Osoba nebo organizace, které bylo půjčeno / od které vráceno'
-    )
-
-    notes = models.CharField(
-        max_length=24,
-        blank=True,
-        verbose_name='Poznámka',
-        help_text='Volitelná poznámka k akci'
-    )
-
-    # --- Methods ---
-    def __str__(self):
-        action = 'Zapůjčeno' if self.rental_type == 'loan' else 'Vráceno'
-        return f"Rental {self.id_rentals} – {self.renter_name} ({self.action_date}) – {action}"
-
-    # --- Validations ---
-    def clean(self):
-        errors = {}
-        if self.renter_name and len(self.renter_name) > 24:
-            errors['renter_name'] = "Jméno může mít maximálně 24 znaků."
-        if self.notes and len(self.notes) > 24:
-            errors['notes'] = "Poznámka může mít maximálně 24 znaků."
-        if self.rental_type not in dict(self.RENTAL_TYPE_CHOICES):
-            errors['rental_type'] = "Neplatný typ akce."
-        if errors:
-            raise ValidationError(errors)
-
-    class Meta:
-        verbose_name = "Zápůjčka"
-        verbose_name_plural = "Zápůjčky"
-
-# Disposals model
+# Disposals
 class Disposals(models.Model):
-    # Possible disposal reasons
     DISPOSAL_REASON_CHOICES = [
-        ('vyřazení', 'Vyřazení'),
-        ('poškození', 'Poškození'),
-        ('ztráta', 'Ztráta'),
-        ('odcizení', 'Odcizení'),
-        ('prodej', 'Prodej'),
-        ('jiné', 'Jiné'),
+        ('vyřazení', 'Vyřazení'), ('poškození', 'Poškození'), ('ztráta', 'Ztráta'),
+        ('odcizení', 'Odcizení'), ('prodej', 'Prodej'), ('jiné', 'Jiné'),
     ]
 
-    # Primary key of the disposals table
     id_disposals = models.AutoField(primary_key=True)
-
-    # Link to a specific item in Inventory
-    inventory_item = models.ForeignKey(
-        Inventory,
-        on_delete=models.CASCADE,
-        related_name="disposals"
-    )
-
-    # Date of disposal
-    disposal_date = models.DateField(
-        verbose_name='Datum likvidace',
-        help_text='Datum, kdy byla položka zlikvidována'
-    )
-
-    # Reason for disposal (predefined choices)
-    disposal_reason = models.CharField(
-        max_length=10,
-        choices=DISPOSAL_REASON_CHOICES,
-        verbose_name='Důvod likvidace',
-        help_text='Vyberte důvod, proč byla položka zlikvidována'
-    )
-
-    # Optional note
-    notes = models.CharField(
-        max_length=24,
-        blank=True,
-        verbose_name='Poznámka',
-        help_text='Volitelná poznámka k likvidaci'
-    )
+    inventory_item = models.ForeignKey(Inventory, on_delete=models.CASCADE, related_name="disposals")
+    disposal_date = models.DateField(verbose_name='Datum likvidace', help_text='Datum, kdy byla položka zlikvidována')
+    disposal_reason = models.CharField(max_length=10, choices=DISPOSAL_REASON_CHOICES, verbose_name='Důvod likvidace', help_text='Vyberte důvod, proč byla položka zlikvidována')
+    notes = models.CharField(max_length=24, blank=True, verbose_name='Poznámka', help_text='Volitelná poznámka k likvidaci')
 
     def __str__(self):
         return f"Disposal {self.id_disposals} – {self.inventory_item} ({self.disposal_date}) – {self.disposal_reason}"
@@ -476,8 +226,9 @@ class Disposals(models.Model):
         verbose_name = "Likvidace"
         verbose_name_plural = "Likvidace"
 
+
+# Manufacturer
 class Manufacturer(models.Model):
-    """Represents a musical instrument manufacturer."""
     id_manufacturer = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50, verbose_name="Výrobce")
     country = models.CharField(max_length=50, blank=True, verbose_name="Země")
@@ -490,8 +241,8 @@ class Manufacturer(models.Model):
         verbose_name_plural = "Výrobci"
 
 
+# Accessory
 class Accessory(models.Model):
-    """Represents an accessory that can be linked to multiple instruments."""
     id_accessory = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50, verbose_name="Příslušenství")
     description = models.CharField(max_length=100, blank=True, verbose_name="Popis")

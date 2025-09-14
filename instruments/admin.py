@@ -1,17 +1,15 @@
 from django.contrib import admin
-from .models import Inventory, Purchases, Servicing, Rentals, Disposals
+from .models import Inventory, Purchases, Servicing, Rentals, Disposals, Rental
 
 # -----------------------------
 # Inventory model admin
 # -----------------------------
 @admin.register(Inventory)
 class InventoryAdmin(admin.ModelAdmin):
-    # Columns displayed in the list view
     list_display = ('inv_num', 'item', 'description', 'group', 'subgroup', 'subsubgroup', 'serial_number')
-    # Fields that can be searched using the search box
     search_fields = ('inv_num', 'item', 'description', 'serial_number')
-    # Filters available in the right sidebar
     list_filter = ('group', 'subgroup', 'subsubgroup')
+
 
 # -----------------------------
 # Purchases model admin
@@ -22,6 +20,7 @@ class PurchasesAdmin(admin.ModelAdmin):
     search_fields = ('inventory_item__item', 'supplier', 'invoice')
     list_filter = ('purchase_date', 'currency')
 
+
 # -----------------------------
 # Servicing model admin
 # -----------------------------
@@ -31,14 +30,26 @@ class ServicingAdmin(admin.ModelAdmin):
     search_fields = ('inventory_item__item', 'supplier', 'invoice')
     list_filter = ('service_date', 'currency')
 
+
 # -----------------------------
-# Rentals model admin
+# Rentals model admin (starý)
 # -----------------------------
 @admin.register(Rentals)
 class RentalsAdmin(admin.ModelAdmin):
-    list_display = ('inventory_item', 'renter_name', 'action_date', 'rental_type', 'notes')
+    list_display = ('inventory_item', 'renter_name', 'rental_date', 'return_date', 'rental_type')
     search_fields = ('inventory_item__item', 'renter_name')
-    list_filter = ('rental_type', 'action_date')
+    list_filter = ('rental_type', 'rental_date')
+
+
+# -----------------------------
+# Rental model admin (nový, pro formulář)
+# -----------------------------
+@admin.register(Rental)
+class RentalAdmin(admin.ModelAdmin):
+    list_display = ('instrument', 'user', 'start_date', 'end_date')
+    search_fields = ('instrument__item', 'user__username')
+    list_filter = ('start_date', 'end_date')
+
 
 # -----------------------------
 # Disposals model admin
