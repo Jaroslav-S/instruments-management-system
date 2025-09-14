@@ -8,3 +8,9 @@ django-filter==25.1
 requests
 djangorestframework-simplejwt==5.5.1
 PyJWT==2.10.1
+iniconfig-2.1.0
+packaging-25.0
+pluggy-1.6.0
+pygments-2.19.2
+pytest-8.4.2
+pytest-django-4.11.1
