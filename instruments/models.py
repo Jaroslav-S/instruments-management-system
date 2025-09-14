@@ -113,6 +113,20 @@ class Inventory(models.Model):
         verbose_name='Sériové číslo',
         help_text='Sériové číslo nástroje nebo příslušenství'
     )
+    manufacturer = models.ForeignKey(
+        "Manufacturer",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="instruments",
+        verbose_name="Výrobce"
+    )
+    accessories = models.ManyToManyField(
+        "Accessory",
+        blank=True,
+        related_name="instruments",
+        verbose_name="Příslušenství"
+    )
 
     # -----------------------------
     # Validation (consistent with Purchases & Servicing)
@@ -461,3 +475,30 @@ class Disposals(models.Model):
     class Meta:
         verbose_name = "Likvidace"
         verbose_name_plural = "Likvidace"
+
+class Manufacturer(models.Model):
+    """Represents a musical instrument manufacturer."""
+    id_manufacturer = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, verbose_name="Výrobce")
+    country = models.CharField(max_length=50, blank=True, verbose_name="Země")
+
+    def __str__(self):
+        return f"{self.name} ({self.country})"
+
+    class Meta:
+        verbose_name = "Výrobce"
+        verbose_name_plural = "Výrobci"
+
+
+class Accessory(models.Model):
+    """Represents an accessory that can be linked to multiple instruments."""
+    id_accessory = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=50, verbose_name="Příslušenství")
+    description = models.CharField(max_length=100, blank=True, verbose_name="Popis")
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        verbose_name = "Příslušenství"
+        verbose_name_plural = "Příslušenství"
